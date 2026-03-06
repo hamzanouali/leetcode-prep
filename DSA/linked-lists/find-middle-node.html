@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Middle Node — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  .ll-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .node {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .node.slow { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .node.fast { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .node.both { background: linear-gradient(135deg, rgba(255,158,207,0.15), rgba(127,212,255,0.15)); border-color: #ffe066; color: #ffe066; box-shadow: 0 0 10px rgba(255,224,102,0.2); }
+  .node.done { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+
+  .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+  .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
+
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  .chalk-table-wrap { overflow-x: auto; margin: 4px 0; }
+
+  .chalk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .chalk-table thead th {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 2px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+  }
+
+  .chalk-table tbody td {
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+  }
+  .chalk-table tbody td strong { color: #ffe066; }
+
+  .chalk-table .row-i1 td { background: rgba(255,158,207,0.04); }
+  .chalk-table .row-i2 td { background: rgba(127,212,255,0.04); }
+  .chalk-table .row-i3 td { background: rgba(255,179,71,0.04); }
+  .chalk-table .row-i4 td { background: rgba(144,238,144,0.04); }
+  .chalk-table .row-final td { border-bottom: 2px solid rgba(144,238,144,0.2); }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  .pill {
+    display: inline-block;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.6);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <!-- ═══════ TITLE ═══════ -->
+  <div class="title">Find Middle Node</div>
+  <div class="subtitle">LC #876 | Slow/Fast Pointer Application</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">🔴 The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given the <strong>head</strong> of a linked list, return the <span class="pink">middle node</span>.<br>
+      If there are two middle nodes, return the <strong>second</strong> one.
+    </div>
+  </div>
+
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); text-align:center;">Example: [1] → [2] → [3] → [4] → [5] → null</div>
+
+  <div class="ll-row">
+    <div class="node dim">1</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node done">3</div>
+    <span class="arrow">→</span>
+    <div class="node dim">4</div>
+    <span class="arrow">→</span>
+    <div class="node dim">5</div>
+    <span class="null-node">→ null</span>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:#90ee90;">Answer: node 3 (the middle)</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ INTUITION ═══════ -->
+  <div class="section-label">🧠 Intuition</div>
+  <div class="solution-box">
+    <div class="chalk">
+      Use <span class="pink">slow</span> (1 step) and <span class="cyan">fast</span> (2 steps).<br>
+      When <span class="cyan">fast</span> reaches the end, <span class="pink">slow</span> is at the <strong>middle</strong>.<br>
+      Why? Fast travels <strong>2x distance</strong> → slow is at <strong>half</strong>.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WALKTHROUGH: ODD LENGTH ═══════ -->
+  <div class="section-label">📸 Trace — Odd Length [1→2→3→4→5]</div>
+
+  <div class="chalk-table-wrap">
+    <table class="chalk-table">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th style="color:#ff9ecf;">Slow</th>
+          <th style="color:#7fd4ff;">Fast</th>
+          <th>Stop?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-i1">
+          <td style="color:rgba(255,255,255,0.5);">init</td>
+          <td>node <strong>1</strong></td>
+          <td>node <strong>1</strong></td>
+          <td style="color:rgba(255,255,255,0.3);">—</td>
+        </tr>
+        <tr class="row-i2">
+          <td>1</td>
+          <td>node <strong>2</strong></td>
+          <td>node <strong>3</strong></td>
+          <td style="color:rgba(255,255,255,0.3);">no</td>
+        </tr>
+        <tr class="row-i3 row-final">
+          <td>2</td>
+          <td style="color:#90ee90;">node <strong>3</strong></td>
+          <td>node <strong>5</strong></td>
+          <td style="color:#90ee90;">fast.next = null → stop</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chalk" style="text-align:center; font-size:clamp(11px,2.4vw,13px); color:#90ee90;">
+    Slow is at node <strong style="color:#ffe066;">3</strong> — the middle!
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WALKTHROUGH: EVEN LENGTH ═══════ -->
+  <div class="section-label">📸 Trace — Even Length [1→2→3→4]</div>
+
+  <div class="chalk-table-wrap">
+    <table class="chalk-table">
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th style="color:#ff9ecf;">Slow</th>
+          <th style="color:#7fd4ff;">Fast</th>
+          <th>Stop?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-i1">
+          <td style="color:rgba(255,255,255,0.5);">init</td>
+          <td>node <strong>1</strong></td>
+          <td>node <strong>1</strong></td>
+          <td style="color:rgba(255,255,255,0.3);">—</td>
+        </tr>
+        <tr class="row-i2 row-final">
+          <td>1</td>
+          <td>node <strong>2</strong></td>
+          <td>node <strong>3</strong></td>
+          <td style="color:rgba(255,255,255,0.3);">no</td>
+        </tr>
+        <tr class="row-i3 row-final">
+          <td>2</td>
+          <td style="color:#90ee90;">node <strong>3</strong></td>
+          <td style="color:#7fd4ff;">null</td>
+          <td style="color:#90ee90;">fast = null → stop</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chalk" style="text-align:center; font-size:clamp(11px,2.4vw,13px); color:#90ee90;">
+    Slow is at node <strong style="color:#ffe066;">3</strong> — the second middle!
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ VISUAL ═══════ -->
+  <div class="section-label">👀 Final State (Odd)</div>
+  <div class="ll-row">
+    <div class="node dim">1</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node done" style="border-width:3px; box-shadow:0 0 12px rgba(144,238,144,0.3);">3</div>
+    <span class="arrow">→</span>
+    <div class="node dim">4</div>
+    <span class="arrow">→</span>
+    <div class="node fast">5</div>
+    <span class="null-node">→ null</span>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
+    <span class="pink">slow↑ at 3</span> &nbsp;&nbsp; <span class="cyan">fast↑ at 5</span> (fast.next = null)
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE ═══════ -->
+  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">middleNode</span>(head) {
+  <span class="kw">let</span> slow = head;
+  <span class="kw">let</span> fast = head;
+
+  <span class="kw">while</span> (fast !== <span class="num">null</span> && fast.next !== <span class="num">null</span>) {
+    slow = slow.next;        <span class="cm">// 1 step</span>
+    fast = fast.next.next;   <span class="cm">// 2 steps</span>
+  }
+
+  <span class="kw">return</span> slow; <span class="cm">// middle node</span>
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ EDGE CASES ═══════ -->
+  <div class="section-label">⚠️ Edge Cases</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <strong>Single node:</strong> fast = head, fast.next = null → loop never runs → return head<br>
+      <strong>Two nodes:</strong> after 1 step, fast = null → return slow (2nd node)<br>
+      <strong>Even vs odd:</strong> the while condition naturally handles both — fast lands on null (even) or last node (odd)
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ COMPLEXITY ═══════ -->
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ KEY INSIGHTS ═══════ -->
+  <div class="insight">
+    <div class="insight-label">💡 Key Insights</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <strong>1.</strong> This is the <span class="pink">simplest slow/fast application</span> — pure pattern, no extras.<br>
+      <strong>2.</strong> "Second middle" for even length comes free — slow naturally lands there.<br>
+      <strong>3.</strong> This becomes a <strong>building block</strong>: sort list (split at middle), palindrome check (find middle → reverse second half).
+    </div>
+  </div>
+
+  <div class="insight" style="border-left-color:#7fd4ff; background:rgba(127,212,255,0.04);">
+    <div class="insight-label" style="color:#7fd4ff;">🔗 Builds On</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <span class="cyan">Two Pointers: Slow & Fast</span> — this is the direct application. If you know the pattern, this problem is free.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
