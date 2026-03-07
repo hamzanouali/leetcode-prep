@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Flatten Multilevel Doubly Linked List — Exam</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #121212; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+  .top-bar { background: #1e1e1e; border-bottom: 1px solid #333; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .top-bar a { color: #888; text-decoration: none; font-size: 14px; padding: 4px 10px; border-radius: 6px; border: 1px solid #333; transition: all 0.2s; }
+  .top-bar a:hover { color: #fff; border-color: #555; }
+  .top-bar .title-group { text-align: center; flex: 1; }
+  .top-bar h1 { font-size: 15px; font-weight: 600; color: #e0e0e0; }
+  .top-bar .tag { font-size: 11px; color: #ffe066; background: rgba(255,224,102,0.1); padding: 1px 8px; border-radius: 10px; display: inline-block; margin-top: 2px; }
+  .problem-panel { background: #1a1a1a; border-bottom: 1px solid #333; padding: 12px 16px; flex-shrink: 0; }
+  .problem-panel summary { cursor: pointer; color: #7fd4ff; font-size: 13px; font-weight: 600; user-select: none; }
+  .problem-panel .desc { font-size: 13px; color: #aaa; line-height: 1.6; margin-top: 8px; }
+  .problem-panel code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-family: 'SF Mono','Fira Code',Consolas,monospace; font-size: 12px; color: #ffb347; }
+  .example { background: rgba(255,255,255,0.03); border: 1px solid #2a2a2a; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 12px; font-family: 'SF Mono','Fira Code',Consolas,monospace; color: #bbb; line-height: 1.6; white-space: pre-wrap; }
+  .example .l { color: #7fd4ff; }
+  .example .v { color: #90ee90; }
+  .editor-area { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .editor-header { background: #1e1e1e; padding: 6px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; flex-shrink: 0; }
+  .editor-header span { font-size: 12px; color: #666; }
+  .reset-btn { font-size: 12px; color: #888; background: transparent; border: 1px solid #333; border-radius: 4px; padding: 3px 10px; cursor: pointer; transition: all 0.2s; }
+  .reset-btn:hover { color: #ff9ecf; border-color: #ff9ecf; }
+  .CodeMirror { flex: 1; height: auto !important; font-size: 14px; line-height: 1.5; font-family: 'SF Mono','Fira Code',Consolas,monospace; }
+  .run-bar { background: #1e1e1e; padding: 10px 16px; border-top: 1px solid #333; flex-shrink: 0; }
+  .run-btn { width: 100%; padding: 12px; font-size: 15px; font-weight: 700; color: #121212; background: #90ee90; border: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+  .run-btn:hover { background: #a8f4a8; }
+  .run-btn:active { transform: scale(0.98); }
+  .run-btn.running { background: #ffe066; }
+  .run-btn.passed { background: #90ee90; }
+  .run-btn.failed { background: #ff6b6b; color: #fff; }
+  .results-panel { background: #1a1a1a; border-top: 1px solid #333; max-height: 45vh; overflow-y: auto; flex-shrink: 0; }
+  .results-panel.hidden { display: none; }
+  .results-header { padding: 8px 16px; font-size: 12px; font-weight: 600; color: #888; background: #1e1e1e; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1; }
+  .results-header .score { font-size: 13px; }
+  .results-header .score.pass { color: #90ee90; }
+  .results-header .score.fail { color: #ff6b6b; }
+  .result-item { padding: 8px 16px; border-bottom: 1px solid #1e1e1e; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; }
+  .result-item .icon { flex-shrink: 0; font-size: 14px; }
+  .result-item.pass .icon { color: #90ee90; }
+  .result-item.fail .icon { color: #ff6b6b; }
+  .result-item .name { color: #ccc; }
+  .result-item.pass .name { color: #90ee90; }
+  .result-item.fail .name { color: #ff6b6b; }
+  .result-item .detail { font-size: 11px; color: #777; margin-top: 2px; font-family: 'SF Mono','Fira Code',Consolas,monospace; }
+  .hint-section { padding: 8px 16px; border-top: 1px solid #2a2a2a; }
+  .hint-section summary { cursor: pointer; color: #ffe066; font-size: 12px; user-select: none; opacity: 0.6; }
+  .hint-section summary:hover { opacity: 1; }
+  .hint-section .hints { font-size: 12px; color: #888; line-height: 1.8; margin-top: 6px; padding-left: 8px; border-left: 2px solid #333; }
+  .hint-section .hints strong { color: #ffe066; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="flatten-multilevel.html">&larr; Lecture</a>
+  <div class="title-group">
+    <h1>Flatten Multilevel Doubly Linked List</h1>
+    <span class="tag">LC #430 &middot; Medium</span>
+  </div>
+  <a href="../../index.html">TOC</a>
+</div>
+
+<div class="problem-panel">
+  <details open>
+    <summary>Problem</summary>
+    <div class="desc">A doubly linked list where nodes can have a <code>child</code> pointer to another list. <strong>Flatten</strong> it into a single-level list in DFS order.<br>Each node has: <code>.val</code>, <code>.prev</code>, <code>.next</code>, <code>.child</code>.</div>
+    <div class="example"><span class="l">Input:</span>  1-2-3-4-5
+            |
+            6-7-8
+              |
+              9-10
+<span class="l">Output:</span> <span class="v">[1,2,3,6,7,9,10,8,4,5]</span></div>
+  </details>
+</div>
+
+<div class="editor-area">
+  <div class="editor-header">
+    <span>JavaScript</span>
+    <button class="reset-btn" onclick="resetCode()">Reset</button>
+  </div>
+  <textarea id="code-editor"></textarea>
+</div>
+
+<div class="hint-section">
+  <details>
+    <summary>Show Hints</summary>
+    <div class="hints">&bull; Walk the list. When node has a <strong>child</strong>:<br>&bull; Save <strong>next</strong>, splice child in: curr.next = child<br>&bull; Find <strong>tail</strong> of child list, connect tail.next = saved next<br>&bull; Clear <strong>child = null</strong>. Continue walking.</div>
+  </details>
+</div>
+
+<div class="run-bar">
+  <button class="run-btn" onclick="runTests()" id="run-btn">Run Tests</button>
+</div>
+
+<div class="results-panel hidden" id="results-panel">
+  <div class="results-header">
+    <span>Test Results</span>
+    <span class="score" id="score"></span>
+  </div>
+  <div id="results"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script>
+
+function Node(val, prev, next, child) { this.val = val; this.prev = prev || null; this.next = next || null; this.child = child || null; }
+function buildMultiLevel(arr, childMap) {
+  if (!arr.length) return null;
+  const nodes = arr.map(v => new Node(v));
+  for (let i = 0; i < nodes.length - 1; i++) { nodes[i].next = nodes[i+1]; nodes[i+1].prev = nodes[i]; }
+  if (childMap) { for (const [idx, childArr] of Object.entries(childMap)) { nodes[+idx].child = buildMultiLevel(childArr.vals, childArr.children); } }
+  return nodes[0];
+}
+function flatToArray(h) { const r = []; let c = h, s = 500; while (c && s-- > 0) { r.push(c.val); c = c.next; } return r; }
+function arrEq(a, b) { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; }
+
+
+const STARTER_CODE = "function flatten(head) {\n  // Each node: { val, prev, next, child }\n  // Your code here\n\n}";
+const STORAGE_KEY = "flatten-multilevel-exam";
+
+const saved = localStorage.getItem(STORAGE_KEY);
+const cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+  mode: 'javascript',
+  theme: 'material-darker',
+  lineNumbers: true,
+  autoCloseBrackets: true,
+  matchBrackets: true,
+  tabSize: 2,
+  indentWithTabs: false,
+  lineWrapping: true,
+  viewportMargin: Infinity
+});
+cm.setValue(saved || STARTER_CODE);
+cm.on('change', () => { localStorage.setItem(STORAGE_KEY, cm.getValue()); });
+
+function resetCode() {
+  cm.setValue(STARTER_CODE);
+  localStorage.setItem(STORAGE_KEY, STARTER_CODE);
+  document.getElementById('results-panel').classList.add('hidden');
+}
+
+const TEST_CASES = [{name:"1-2-3(child:6-7(child:9-10)-8)-4-5",run:function(fn){const h=buildMultiLevel([1,2,3,4,5],{2:{vals:[6,7,8],children:{1:{vals:[9,10]}}}});const r=flatToArray(fn(h));return{ok:arrEq(r,[1,2,3,6,7,9,10,8,4,5]),detail:'Expected [1,2,3,6,7,9,10,8,4,5] got ['+r+']'};}},
+{name:"Single node, no child",run:function(fn){const h=buildMultiLevel([1],{});const r=flatToArray(fn(h));return{ok:arrEq(r,[1]),detail:'Expected [1] got ['+r+']'};}},
+{name:"Empty list -> []",run:function(fn){const r=flatToArray(fn(null));return{ok:arrEq(r,[]),detail:'Expected [] got ['+r+']'};}},
+{name:"1(child:2(child:3))",run:function(fn){const h=buildMultiLevel([1],{0:{vals:[2],children:{0:{vals:[3]}}}});const r=flatToArray(fn(h));return{ok:arrEq(r,[1,2,3]),detail:'Expected [1,2,3] got ['+r+']'};}},
+{name:"1-2-3 (child at 1: 4-5)",run:function(fn){const h=buildMultiLevel([1,2,3],{0:{vals:[4,5]}});const r=flatToArray(fn(h));return{ok:arrEq(r,[1,4,5,2,3]),detail:'Expected [1,4,5,2,3] got ['+r+']'};}}];
+
+function runTests() {
+  const btn = document.getElementById('run-btn');
+  const panel = document.getElementById('results-panel');
+  const resultsEl = document.getElementById('results');
+  const scoreEl = document.getElementById('score');
+  btn.textContent = 'Running...';
+  btn.classList.add('running');
+  btn.classList.remove('passed', 'failed');
+
+  setTimeout(() => {
+    panel.classList.remove('hidden');
+    resultsEl.innerHTML = '';
+    let userFn;
+    try {
+      const userCode = cm.getValue();
+      userFn = new Function('Node', userCode + '\nreturn flatten;')(Node);
+    } catch (err) {
+      resultsEl.innerHTML = '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">Syntax Error</span><div class="detail">' + escapeHtml(err.message) + '</div></div></div>';
+      scoreEl.textContent = '0/' + TEST_CASES.length;
+      scoreEl.className = 'score fail';
+      btn.textContent = 'Run Tests';
+      btn.classList.remove('running');
+      btn.classList.add('failed');
+      return;
+    }
+
+    let passed = 0;
+    TEST_CASES.forEach((tc) => {
+      let result, error;
+      try {
+        result = tc.run(userFn);
+      } catch (e) {
+        error = e;
+      }
+      if (error) {
+        resultsEl.innerHTML += '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">' + escapeHtml(tc.name) + '</span><div class="detail">Error: ' + escapeHtml(error.message) + '</div></div></div>';
+      } else if (result.ok) {
+        passed++;
+        resultsEl.innerHTML += '<div class="result-item pass"><span class="icon">&#x2714;</span><div><span class="name">' + escapeHtml(tc.name) + '</span></div></div>';
+      } else {
+        resultsEl.innerHTML += '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">' + escapeHtml(tc.name) + '</span><div class="detail">' + escapeHtml(result.detail) + '</div></div></div>';
+      }
+    });
+
+    scoreEl.textContent = passed + '/' + TEST_CASES.length;
+    scoreEl.className = 'score ' + (passed === TEST_CASES.length ? 'pass' : 'fail');
+    btn.textContent = passed === TEST_CASES.length ? 'All Passed!' : passed + '/' + TEST_CASES.length + ' \u2014 Run Tests';
+    btn.classList.remove('running');
+    btn.classList.add(passed === TEST_CASES.length ? 'passed' : 'failed');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+
+function escapeHtml(s) { const el = document.createElement('span'); el.textContent = s; return el.innerHTML; }
+</script>
+</body>
+</html>
