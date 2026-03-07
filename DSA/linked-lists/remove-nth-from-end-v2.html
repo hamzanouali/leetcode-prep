@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Remove N-th Node from End — Lecture Board</title>
+<title>Remove N-th Node from End — Ruler Analogy</title>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -131,6 +131,7 @@
   .node.deleted { background: rgba(255,107,107,0.1); border-color: #ff6b6b; color: #ff6b6b; box-shadow: 0 0 8px rgba(255,107,107,0.15); border-style: dashed; }
   .node.dummy { background: rgba(255,179,71,0.08); border-color: #ffb347; color: #ffb347; border-style: dashed; }
   .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+  .node.target { background: rgba(255,179,71,0.12); border-color: #ffb347; color: #ffb347; box-shadow: 0 0 8px rgba(255,179,71,0.15); }
 
   .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
   .arrow.skip { color: #90ee90; }
@@ -166,40 +167,6 @@
     color: #ffb347;
     margin-bottom: 4px;
   }
-
-  .chalk-table-wrap { overflow-x: auto; margin: 4px 0; }
-
-  .chalk-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-family: 'Caveat', cursive;
-    font-size: clamp(11px, 2.5vw, 14px);
-    color: rgba(255,255,255,0.85);
-  }
-
-  .chalk-table thead th {
-    font-family: 'Patrick Hand', cursive;
-    font-size: clamp(10px, 2.3vw, 13px);
-    padding: 5px 6px;
-    text-align: center;
-    border-bottom: 2px solid rgba(255,255,255,0.18);
-    color: rgba(255,255,255,0.6);
-    font-weight: 400;
-  }
-
-  .chalk-table tbody td {
-    padding: 5px 6px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    vertical-align: middle;
-  }
-  .chalk-table tbody td strong { color: #ffe066; }
-
-  .chalk-table .row-i1 td { background: rgba(255,158,207,0.04); }
-  .chalk-table .row-i2 td { background: rgba(127,212,255,0.04); }
-  .chalk-table .row-i3 td { background: rgba(255,179,71,0.04); }
-  .chalk-table .row-final td { border-bottom: 2px solid rgba(144,238,144,0.2); }
 
   .code-block {
     background: rgba(0,0,0,0.3);
@@ -305,6 +272,63 @@
     background: rgba(0,0,0,0.25);
   }
 
+  .ruler-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 6px 0;
+  }
+
+  .ruler {
+    display: flex;
+    align-items: center;
+    border: 2px solid #ffb347;
+    border-radius: 6px;
+    background: rgba(255,179,71,0.06);
+    padding: 2px 0;
+    position: relative;
+  }
+
+  .ruler-cell {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(22px, 5vw, 28px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: #ffb347;
+    border-right: 1px dashed rgba(255,179,71,0.3);
+  }
+  .ruler-cell:last-child { border-right: none; }
+
+  .ruler-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,179,71,0.7);
+    margin-top: 2px;
+  }
+
+  .ptr-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 0;
+  }
+  .ptr-cell {
+    width: clamp(30px, 7vw, 38px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    flex-shrink: 0;
+  }
+  .ptr-spacer {
+    width: clamp(16px, 3.6vw, 20px);
+    flex-shrink: 0;
+  }
+
   .exam-btn {
     display: flex;
     align-items: center;
@@ -331,26 +355,36 @@
 <body>
 <div class="board">
 
-    <a class="back-btn" href="../../index.html">← Back</a>
+  <a class="back-btn" href="../../index.html">← Back</a>
 
   <div class="nav-tabs">
-    <a class="active" href="remove-nth-from-end.html">v1: Gap Technique</a>
-    <a href="remove-nth-from-end-v2.html">v2: Ruler Analogy</a>
+    <a href="remove-nth-from-end.html">v1: Gap Technique</a>
+    <a class="active" href="remove-nth-from-end-v2.html">v2: Ruler Analogy</a>
     <a href="remove-nth-from-end-v3.html">v3: Frame-by-Frame</a>
   </div>
 
-<div class="title">Remove N-th Node from End</div>
-  <div class="subtitle">LC #19 | Two-Pointer Gap Technique</div>
+  <div class="title">Remove N-th Node from End</div>
+  <div class="subtitle">LC #19 | Think of it as a Ruler</div>
 
   <!-- ═══════ PROBLEM ═══════ -->
-  <div class="section-label">🔴 The Problem</div>
+  <div class="section-label">The Core Question</div>
   <div class="problem-box">
     <div class="chalk">
-      Given the <strong>head</strong> and an integer <strong>n</strong>, remove the <span class="pink">n-th node from the end</span> and return the head.
+      We can only walk <span class="pink">forward</span> through a linked list. So how do we find something that's defined by its distance from the <strong>end</strong>?
     </div>
   </div>
 
-  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); text-align:center;">Example: [1] → [2] → [3] → [4] → [5], n = 2 → remove node 4</div>
+  <hr class="divider">
+
+  <!-- ═══════ THE RULER IDEA ═══════ -->
+  <div class="section-label">The Ruler Idea</div>
+  <div class="solution-box">
+    <div class="chalk">
+      Imagine you have a <span class="orange">ruler</span> that is exactly <strong>n nodes long</strong>. If you slide that ruler so its <strong>right end touches the last node</strong>, the left end points to the node to remove.
+    </div>
+  </div>
+
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45);">Example: list = [1,2,3,4,5], n = 2</div>
 
   <div class="ll-row">
     <div class="node dim">1</div>
@@ -359,149 +393,174 @@
     <span class="arrow">→</span>
     <div class="node dim">3</div>
     <span class="arrow">→</span>
-    <div class="node deleted">4</div>
+    <div class="node target">4</div>
     <span class="arrow">→</span>
     <div class="node dim">5</div>
     <span class="null-node">→ null</span>
   </div>
 
+  <div class="ruler-wrap">
+    <div class="ruler" style="margin-left: clamp(92px, 21.2vw, 116px);">
+      <div class="ruler-cell">1</div>
+      <div class="ruler-cell">2</div>
+    </div>
+    <div class="ruler-label">← ruler of length n=2 →</div>
+  </div>
+
+  <div class="chalk" style="text-align:center; font-size:clamp(11px,2.4vw,13px);">
+    Ruler's right end on node <strong>5</strong> (last) → left end lands on node <span class="orange">4</span> (the target!)
+  </div>
+
   <hr class="divider">
 
-  <!-- ═══════ STRATEGY ═══════ -->
-  <div class="section-label">🧠 Strategy</div>
-  <div class="solution-box">
-    <div class="chalk">
-      <strong>1.</strong> Use a <span class="orange">dummy node</span> before head (handles removing head itself).<br>
-      <strong>2.</strong> Move <span class="cyan">fast</span> pointer <strong>n+1</strong> steps ahead.<br>
-      <strong>3.</strong> Move <span class="pink">slow</span> and <span class="cyan">fast</span> together until fast = null.<br>
-      <strong>4.</strong> <span class="pink">slow</span> is now <strong>right before</strong> the target → skip it!
+  <!-- ═══════ BUT WE CAN'T ═══════ -->
+  <div class="section-label">Building the Ruler with Pointers</div>
+  <div class="step-box">
+    <div class="step-title">The Problem</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      We don't know where the list ends. We can't just place the ruler at the end. But we <em>can</em> build the ruler at the <strong>start</strong> and then <span class="green">slide it forward until it falls off</span>.
     </div>
   </div>
 
   <div class="step-box">
-    <div class="step-title">Why n+1 gap?</div>
+    <div class="step-title">Step 1: Build the Ruler</div>
     <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      We need slow to land <strong>one before</strong> the target so we can do <span class="cyan">slow.next = slow.next.next</span>. Starting slow at dummy and advancing fast n+1 times creates exactly this gap.
+      Place <span class="pink">slow</span> at the start. Move <span class="cyan">fast</span> forward <strong>n</strong> steps. Now slow and fast are exactly <strong>n apart</strong> — that's your ruler!
     </div>
   </div>
 
-  <hr class="divider">
+  <div class="ll-row">
+    <div class="node slow">1</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node fast">3</div>
+    <span class="arrow">→</span>
+    <div class="node dim">4</div>
+    <span class="arrow">→</span>
+    <div class="node dim">5</div>
+    <span class="null-node">→ null</span>
+  </div>
+  <div class="ptr-row">
+    <div class="ptr-cell" style="color:#ff9ecf;">&#8593;slow</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#7fd4ff;">&#8593;fast</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell"></div>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45);">gap = 2 nodes (the ruler!)</div>
 
-  <!-- ═══════ WALKTHROUGH ═══════ -->
-  <div class="section-label">📸 Trace — n = 2</div>
-  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); text-align:center;">[D] → [1] → [2] → [3] → [4] → [5] → null</div>
-
-  <div class="chalk-table-wrap">
-    <table class="chalk-table">
-      <thead>
-        <tr>
-          <th>Phase</th>
-          <th style="color:#ff9ecf;">Slow</th>
-          <th style="color:#7fd4ff;">Fast</th>
-          <th>Gap</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="row-i1">
-          <td style="color:rgba(255,255,255,0.5);">init</td>
-          <td>D</td>
-          <td>D</td>
-          <td>0</td>
-        </tr>
-        <tr class="row-i2">
-          <td>fast+1</td>
-          <td>D</td>
-          <td>node <strong>1</strong></td>
-          <td>1</td>
-        </tr>
-        <tr class="row-i2">
-          <td>fast+2</td>
-          <td>D</td>
-          <td>node <strong>2</strong></td>
-          <td>2</td>
-        </tr>
-        <tr class="row-i3">
-          <td>fast+3</td>
-          <td>D</td>
-          <td>node <strong>3</strong></td>
-          <td style="color:#90ee90;">3 (n+1)</td>
-        </tr>
-        <tr class="row-i1">
-          <td>both+1</td>
-          <td>node <strong>1</strong></td>
-          <td>node <strong>4</strong></td>
-          <td>3</td>
-        </tr>
-        <tr class="row-i2">
-          <td>both+2</td>
-          <td>node <strong>2</strong></td>
-          <td>node <strong>5</strong></td>
-          <td>3</td>
-        </tr>
-        <tr class="row-i3 row-final">
-          <td>both+3</td>
-          <td style="color:#90ee90;">node <strong>3</strong></td>
-          <td style="color:#7fd4ff;">null</td>
-          <td style="color:#90ee90;">stop</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="step-box">
+    <div class="step-title">Step 2: Slide the Ruler</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Move <span class="pink">slow</span> and <span class="cyan">fast</span> together, one step at a time. The gap stays fixed. When <span class="cyan">fast</span> reaches the <strong>last node</strong> (fast.next = null), <span class="pink">slow</span> is sitting right before the target.
+    </div>
   </div>
 
-  <div class="chalk" style="text-align:center; font-size:clamp(11px,2.4vw,13px); color:#90ee90;">
-    Slow at node <strong style="color:#ffe066;">3</strong> → skip node 4!
-  </div>
-
-  <!-- ═══════ AFTER REMOVAL ═══════ -->
-  <div class="section-label">✅ After Removal</div>
   <div class="ll-row">
     <div class="node dim">1</div>
     <span class="arrow">→</span>
     <div class="node dim">2</div>
     <span class="arrow">→</span>
-    <div class="node done">3</div>
-    <span class="arrow skip">→</span>
-    <div class="node dim">5</div>
+    <div class="node slow">3</div>
+    <span class="arrow">→</span>
+    <div class="node deleted">4</div>
+    <span class="arrow">→</span>
+    <div class="node fast">5</div>
     <span class="null-node">→ null</span>
+  </div>
+  <div class="ptr-row">
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#ff9ecf;">&#8593;slow</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#ff6b6b;">skip!</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#7fd4ff;">&#8593;fast</div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 3: Remove</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <span class="cyan">slow.next = slow.next.next</span> — done! Node 4 is gone.
+    </div>
   </div>
 
   <hr class="divider">
 
+  <!-- ═══════ ALTERNATIVE VIEW ═══════ -->
+  <div class="section-label">Why This Works — In Plain English</div>
+  <div class="solution-box">
+    <div class="chalk">
+      When <span class="cyan">fast</span> is at the last node, it has <strong>0 nodes</strong> remaining after it. Since <span class="pink">slow</span> is <strong>n behind</strong>, slow has <strong>n nodes</strong> remaining after it. That means slow.next is the n-th from the end.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ EDGE CASE ═══════ -->
+  <div class="section-label">Edge Case: Removing the Head</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      If <strong>n = list length</strong> (remove the first node), slow needs to be <em>before</em> the head. That's impossible without a <span class="orange">dummy node</span>!<br><br>
+      Add a dummy before head. Start <span class="pink">slow</span> there. Now the ruler technique works for every case, including removing the head.
+    </div>
+  </div>
+
+  <div class="ll-row">
+    <div class="node dummy">D</div>
+    <span class="arrow">→</span>
+    <div class="node deleted">1</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node dim">3</div>
+    <span class="null-node">→ null</span>
+  </div>
+  <div class="ptr-row">
+    <div class="ptr-cell" style="color:#ff9ecf;">&#8593;slow</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#ff6b6b;">skip!</div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer"></div>
+    <div class="ptr-cell" style="color:#7fd4ff;">&#8593;fast</div>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45);">n=3, list length=3 → removing head. Dummy saves us!</div>
+
+  <hr class="divider">
+
   <!-- ═══════ CODE ═══════ -->
-  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="section-label">Code (JavaScript)</div>
   <div class="code-block"><span class="kw">function</span> <span class="fn">removeNthFromEnd</span>(head, n) {
   <span class="kw">const</span> dummy = { next: head };
   <span class="kw">let</span> slow = dummy;
   <span class="kw">let</span> fast = dummy;
 
-  <span class="cm">// Move fast n+1 steps ahead</span>
+  <span class="cm">// Build the ruler: move fast n+1 ahead</span>
+  <span class="cm">// (n+1 because slow starts at dummy,</span>
+  <span class="cm">//  so we need one extra step)</span>
   <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i <= n; i++) {
     fast = fast.next;
   }
 
-  <span class="cm">// Move both until fast hits null</span>
+  <span class="cm">// Slide the ruler until it falls off</span>
   <span class="kw">while</span> (fast !== <span class="num">null</span>) {
     slow = slow.next;
     fast = fast.next;
   }
 
-  <span class="cm">// Skip the target node</span>
+  <span class="cm">// slow is right before the target</span>
   slow.next = slow.next.next;
 
   <span class="kw">return</span> dummy.next;
 }</div>
-
-  <hr class="divider">
-
-  <!-- ═══════ WHY DUMMY ═══════ -->
-  <div class="section-label">🛡️ Why Dummy Node?</div>
-  <div class="step-box">
-    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      If <strong>n = list length</strong>, we're removing the <span class="pink">head itself</span>.<br>
-      Without dummy, slow would need to start <em>before</em> head — impossible!<br>
-      Dummy gives us that "before head" anchor for free.
-    </div>
-  </div>
 
   <hr class="divider">
 
@@ -513,15 +572,13 @@
   <hr class="divider">
 
   <div class="insight">
-    <div class="insight-label">💡 Key Insights</div>
+    <div class="insight-label">The Takeaway</div>
     <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
-      <strong>1.</strong> The <span class="orange">gap technique</span>: create a fixed gap between two pointers, then slide both. When the leader hits the end, the follower is at your target.<br>
-      <strong>2.</strong> <span class="cyan">Dummy head</span> + <span class="pink">two pointers</span> = two Level 1 patterns combined.<br>
-      <strong>3.</strong> One pass only — no need to count the list length first.
+      <strong>Can't count from the end?</strong> Build a ruler of known length, slide it to the end, and read the left edge. Two pointers with a fixed gap = a measuring stick you can slide through any linked list.
     </div>
   </div>
 
-<hr class="divider">
+  <hr class="divider">
 
   <a href="remove-nth-from-end-exam.html" class="exam-btn">&#x270F; Examine Yourself</a>
 
