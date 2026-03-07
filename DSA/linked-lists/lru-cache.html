@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LRU Cache — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  .ll-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .node {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .node.active { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .node.slow { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .node.fast { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .node.dummy { background: rgba(255,179,71,0.08); border-color: #ffb347; color: #ffb347; border-style: dashed; font-size: clamp(9px, 2vw, 11px); }
+  .node.deleted { background: rgba(255,107,107,0.1); border-color: #ff6b6b; color: #ff6b6b; box-shadow: 0 0 8px rgba(255,107,107,0.15); border-style: dashed; }
+  .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+
+  .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+  .arrow.rev { color: #90ee90; }
+  .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
+
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  .two-ops {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 5px 0;
+  }
+  .op-card {
+    background: rgba(0,0,0,0.15);
+    border-radius: 6px;
+    padding: 6px 8px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .op-name {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+  }
+  .op-desc {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="title">LRU Cache</div>
+  <div class="subtitle">LC #146 | Doubly-Linked List + HashMap</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">🔴 The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Design a data structure with <strong>O(1)</strong> <span class="cyan">get</span> and <span class="pink">put</span>.<br>
+      When capacity is exceeded, evict the <span class="orange">least recently used</span> item.
+    </div>
+  </div>
+
+  <div class="two-ops">
+    <div class="op-card">
+      <div class="op-name" style="color:#7fd4ff;">get(key)</div>
+      <div class="op-desc">Return value, mark as recently used. Return -1 if missing.</div>
+    </div>
+    <div class="op-card">
+      <div class="op-name" style="color:#ff9ecf;">put(key, val)</div>
+      <div class="op-desc">Insert/update. If over capacity, evict LRU.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ DATA STRUCTURE ═══════ -->
+  <div class="section-label">🧠 Data Structure</div>
+  <div class="solution-box">
+    <div class="chalk">
+      <strong>HashMap:</strong> key → node reference (O(1) lookup).<br>
+      <strong>Doubly Linked List:</strong> orders by recency.<br>
+      <span class="green">Head = most recent</span>, <span class="orange">Tail = least recent</span> (LRU).<br>
+      Two <span class="cyan">dummy sentinels</span> (head & tail) simplify edge cases.
+    </div>
+  </div>
+
+  <div class="ll-row">
+    <div class="node dummy">HD</div>
+    <span class="arrow">↔</span>
+    <div class="node active">A</div>
+    <span class="arrow">↔</span>
+    <div class="node dim">B</div>
+    <span class="arrow">↔</span>
+    <div class="node dim">C</div>
+    <span class="arrow">↔</span>
+    <div class="node dummy">TL</div>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
+    <span class="green">most recent</span> ←—————→ <span class="orange">least recent (evict)</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ OPERATIONS ═══════ -->
+  <div class="section-label">⚙️ Operations</div>
+
+  <div class="step-box">
+    <div class="step-title">get(B) — Move to Front</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <strong>1.</strong> Find B via hashmap → O(1)<br>
+      <strong>2.</strong> Remove B from current position (relink neighbors)<br>
+      <strong>3.</strong> Insert B right after head dummy
+    </div>
+    <div class="ll-row">
+      <div class="node dummy">HD</div>
+      <span class="arrow">↔</span>
+      <div class="node active">B</div>
+      <span class="arrow">↔</span>
+      <div class="node dim">A</div>
+      <span class="arrow">↔</span>
+      <div class="node dim">C</div>
+      <span class="arrow">↔</span>
+      <div class="node dummy">TL</div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">put(D) — Over Capacity</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <strong>1.</strong> Insert D at front<br>
+      <strong>2.</strong> Over capacity → evict from back: remove node before tail dummy<br>
+      <strong>3.</strong> Delete evicted key from hashmap
+    </div>
+    <div class="ll-row">
+      <div class="node dummy">HD</div>
+      <span class="arrow">↔</span>
+      <div class="node active">D</div>
+      <span class="arrow">↔</span>
+      <div class="node dim">B</div>
+      <span class="arrow">↔</span>
+      <div class="node dim">A</div>
+      <span class="arrow">↔</span>
+      <div class="node dummy">TL</div>
+    </div>
+    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:#ff6b6b;">C evicted (was LRU)</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ HELPER METHODS ═══════ -->
+  <div class="section-label">🔧 Two Helper Methods</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <span class="cyan">remove(node)</span> — unlink a node from the DLL. O(1) because we have prev and next pointers.<br><br>
+      <span class="cyan">addToFront(node)</span> — insert right after head dummy. O(1).<br><br>
+      <strong>Every operation</strong> is just remove + addToFront (move to front), or addToFront + possibly remove from back (evict).
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE ═══════ -->
+  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="code-block"><span class="kw">class</span> <span class="fn">LRUCache</span> {
+  <span class="fn">constructor</span>(capacity) {
+    <span class="kw">this</span>.cap = capacity;
+    <span class="kw">this</span>.map = <span class="kw">new</span> <span class="fn">Map</span>();
+    <span class="cm">// Dummy sentinels</span>
+    <span class="kw">this</span>.head = { prev: <span class="num">null</span> };
+    <span class="kw">this</span>.tail = { next: <span class="num">null</span> };
+    <span class="kw">this</span>.head.next = <span class="kw">this</span>.tail;
+    <span class="kw">this</span>.tail.prev = <span class="kw">this</span>.head;
+  }
+
+  <span class="fn">_remove</span>(node) {
+    node.prev.next = node.next;
+    node.next.prev = node.prev;
+  }
+
+  <span class="fn">_addToFront</span>(node) {
+    node.next = <span class="kw">this</span>.head.next;
+    node.prev = <span class="kw">this</span>.head;
+    <span class="kw">this</span>.head.next.prev = node;
+    <span class="kw">this</span>.head.next = node;
+  }
+
+  <span class="fn">get</span>(key) {
+    <span class="kw">if</span> (!<span class="kw">this</span>.map.has(key)) <span class="kw">return</span> -<span class="num">1</span>;
+    <span class="kw">const</span> node = <span class="kw">this</span>.map.get(key);
+    <span class="kw">this</span>._remove(node);
+    <span class="kw">this</span>._addToFront(node);
+    <span class="kw">return</span> node.val;
+  }
+
+  <span class="fn">put</span>(key, value) {
+    <span class="kw">if</span> (<span class="kw">this</span>.map.has(key)) {
+      <span class="kw">this</span>._remove(<span class="kw">this</span>.map.get(key));
+    }
+    <span class="kw">const</span> node = { key, val: value };
+    <span class="kw">this</span>.map.set(key, node);
+    <span class="kw">this</span>._addToFront(node);
+
+    <span class="kw">if</span> (<span class="kw">this</span>.map.size > <span class="kw">this</span>.cap) {
+      <span class="kw">const</span> lru = <span class="kw">this</span>.tail.prev;
+      <span class="kw">this</span>._remove(lru);
+      <span class="kw">this</span>.map.delete(lru.key);
+    }
+  }
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WHY DOUBLY LINKED ═══════ -->
+  <div class="section-label">❓ Why Doubly Linked?</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Singly linked: removing a node needs its <strong>predecessor</strong> → O(n) to find.<br>
+      Doubly linked: node has <strong>prev</strong> → remove in O(1).<br>
+      The hashmap gives us the node. DLL lets us remove and reinsert it instantly.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(1)</span> per op</div>
+    <div class="badge">Space: <span class="s">O(cap)</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-label">💡 Key Insights</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <strong>1.</strong> <span class="cyan">HashMap</span> = O(1) lookup. <span class="pink">DLL</span> = O(1) reorder. Together = O(1) everything.<br>
+      <strong>2.</strong> <span class="orange">Dummy sentinels</span> (head/tail) eliminate all null checks — no edge cases for empty list, single item, etc.<br>
+      <strong>3.</strong> Store the <strong>key</strong> in the DLL node so you can delete from the map when evicting.<br>
+      <strong>4.</strong> This is a <strong>system design staple</strong> — the combo of hashmap + ordered structure appears in many real systems (Redis, Memcached).
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
