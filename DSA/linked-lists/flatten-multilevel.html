@@ -219,14 +219,22 @@
   }
 
   .multi-diagram {
-    font-family: 'Gloria Hallelujah', cursive;
-    font-size: clamp(9px, 2vw, 11px);
-    color: rgba(255,255,255,0.7);
-    line-height: 1.8;
     padding: 8px;
     background: rgba(0,0,0,0.12);
     border-radius: 6px;
     margin: 4px 0;
+  }
+
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
+
+  .child-label {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9px, 2vw, 11px);
+    color: #ffb347;
+    text-align: center;
+    margin: 2px 0;
   }
 
   .back-btn {
@@ -271,11 +279,52 @@
   <!-- ═══════ MULTILEVEL DIAGRAM ═══════ -->
   <div class="section-label">📐 Structure</div>
   <div class="multi-diagram">
-    <span style="color:#ff9ecf;">1</span> ↔ <span style="color:#ff9ecf;">2</span> ↔ <span style="color:#ff9ecf;">3</span> ↔ <span style="color:#ff9ecf;">4</span> ↔ <span style="color:#ff9ecf;">5</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffb347;">↓ child</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#7fd4ff;">6</span> ↔ <span style="color:#7fd4ff;">7</span> ↔ <span style="color:#7fd4ff;">8</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffb347;">↓ child</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#90ee90;">9</span> ↔ <span style="color:#90ee90;">10</span>
+    <!-- Level 1: 1 ↔ 2 ↔ 3 ↔ 4 ↔ 5 -->
+    <div class="ll-row">
+      <div class="node slow">1</div>
+      <span class="arrow">↔</span>
+      <div class="node slow">2</div>
+      <span class="arrow">↔</span>
+      <div class="node slow">3</div>
+      <span class="arrow">↔</span>
+      <div class="node slow">4</div>
+      <span class="arrow">↔</span>
+      <div class="node slow">5</div>
+    </div>
+    <!-- Pointer: child from node 3 -->
+    <div class="ptr-row">
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell" style="color:#ffb347;">↓ child</div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell"></div>
+    </div>
+    <!-- Level 2: 6 ↔ 7 ↔ 8 (indented under node 3) -->
+    <div class="ll-row" style="margin-left: 80px; justify-content: flex-start;">
+      <div class="node fast">6</div>
+      <span class="arrow">↔</span>
+      <div class="node fast">7</div>
+      <span class="arrow">↔</span>
+      <div class="node fast">8</div>
+    </div>
+    <!-- Pointer: child from node 7 -->
+    <div class="ptr-row" style="margin-left: 80px; justify-content: flex-start;">
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell" style="color:#ffb347;">↓ child</div>
+      <span class="ptr-spacer">↔</span>
+      <div class="ptr-cell"></div>
+    </div>
+    <!-- Level 3: 9 ↔ 10 (indented under node 7) -->
+    <div class="ll-row" style="margin-left: 160px; justify-content: flex-start;">
+      <div class="node active">9</div>
+      <span class="arrow">↔</span>
+      <div class="node active">10</div>
+    </div>
   </div>
 
   <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45);">

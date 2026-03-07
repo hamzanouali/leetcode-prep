@@ -206,17 +206,10 @@
     flex-direction: column;
     align-items: center;
   }
-  .snap-ptrs {
-    display: flex;
-    font-family: 'Gloria Hallelujah', cursive;
-    font-size: clamp(8px, 1.8vw, 10px);
-    margin-top: 1px;
-    gap: 0;
-  }
-  .sp-slow { color: #ff9ecf; }
-  .sp-fast { color: #7fd4ff; }
-  .sp-spacer { width: clamp(30px, 7vw, 38px); }
-  .sp-arrow { width: clamp(14px, 3.2vw, 18px); }
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
+  .ptr-null { width: clamp(26px, 6vw, 32px); margin-left: 2px; flex-shrink: 0; }
 
   /* ─── Iter frame ─── */
   .iter-frame {
@@ -508,8 +501,17 @@
         <div class="node dim">5</div>
         <span class="null-node">→ ∅</span>
       </div>
-      <div class="snap-ptrs">
-        <span class="sp-slow">S↑</span><span style="color:#ffe066;font-size:clamp(7px,1.6vw,9px);">&nbsp;F↑</span>
+      <div class="ptr-row">
+        <div class="ptr-cell"><span style="color:#ff9ecf;">S↑</span><span style="color:#7fd4ff;">F↑</span></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-null"></div>
       </div>
     </div>
   </div>
@@ -529,12 +531,17 @@
         <div class="node dim">5</div>
         <span class="null-node">→ ∅</span>
       </div>
-      <div class="snap-ptrs">
-        <span class="sp-spacer"></span>
-        <span class="sp-arrow"></span>
-        <span class="sp-slow">S↑</span>
-        <span class="sp-arrow"></span>
-        <span class="sp-fast">F↑</span>
+      <div class="ptr-row">
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell" style="color:#ff9ecf;">S↑</div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell" style="color:#7fd4ff;">F↑</div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-null"></div>
       </div>
     </div>
   </div>
@@ -554,16 +561,17 @@
         <div class="node fast">5</div>
         <span class="null-node">→ ∅</span>
       </div>
-      <div class="snap-ptrs">
-        <span class="sp-spacer"></span>
-        <span class="sp-arrow"></span>
-        <span class="sp-spacer"></span>
-        <span class="sp-arrow"></span>
-        <span class="sp-slow">S↑</span>
-        <span class="sp-arrow"></span>
-        <span class="sp-spacer"></span>
-        <span class="sp-arrow"></span>
-        <span class="sp-fast">F↑</span>
+      <div class="ptr-row">
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell" style="color:#ff9ecf;">S↑</div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell"></div>
+        <div class="ptr-spacer">→</div>
+        <div class="ptr-cell" style="color:#7fd4ff;">F↑</div>
+        <div class="ptr-null"></div>
       </div>
     </div>
   </div>

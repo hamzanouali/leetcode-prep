@@ -131,6 +131,10 @@
   .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
 
   .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
   .arrow.green { color: #90ee90; }
   .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
 
@@ -287,8 +291,9 @@
       <div class="node fast">5</div>
       <span class="null-node">→ null</span>
     </div>
-    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
-      <span class="pink">less</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cyan">greater</span>
+    <div style="display:flex; justify-content:center; gap: 20px; font-family:'Gloria Hallelujah',cursive; font-size:clamp(9px,2vw,11px);">
+      <span style="color:#ff9ecf;">← less →</span>
+      <span style="color:#7fd4ff;">← greater →</span>
     </div>
   </div>
 

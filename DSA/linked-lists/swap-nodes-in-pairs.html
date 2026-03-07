@@ -131,6 +131,10 @@
   .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
 
   .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
   .arrow.rev { color: #90ee90; }
   .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
 
@@ -269,8 +273,14 @@
     <div class="node fast">4</div>
     <span class="null-node">→ null</span>
   </div>
-  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.4);">
-    <span class="pink">pair 1</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cyan">pair 2</span>
+  <div class="ptr-row">
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer" style="visibility:visible; color:#ff9ecf;">pair 1</div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer">→</div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer" style="visibility:visible; color:#7fd4ff;">pair 2</div>
+    <div class="ptr-cell"></div>
   </div>
 
   <hr class="divider">

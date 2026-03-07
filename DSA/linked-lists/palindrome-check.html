@@ -238,6 +238,10 @@
     border-color: rgba(255,255,255,0.3);
     background: rgba(0,0,0,0.25);
   }
+
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -328,8 +332,9 @@
       <div class="node fast">2</div>
       <span class="null-node">→ null</span>
     </div>
-    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
-      <span class="pink">first half</span> &nbsp;&nbsp;&nbsp; <span class="cyan">reversed second half</span>
+    <div style="display:flex; justify-content:center; gap: 20px; font-family:'Gloria Hallelujah',cursive; font-size:clamp(9px,2vw,11px);">
+      <span style="color:#ff9ecf;">← first half →</span>
+      <span style="color:#7fd4ff;">← reversed 2nd half →</span>
     </div>
   </div>
 

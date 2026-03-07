@@ -134,6 +134,10 @@
   .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
   .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
 
+  .ptr-row { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex-wrap: nowrap; margin-top: -2px; }
+  .ptr-cell { width: clamp(30px, 7vw, 38px); text-align: center; font-family: 'Gloria Hallelujah', cursive; font-size: clamp(8px, 1.8vw, 10px); flex-shrink: 0; }
+  .ptr-spacer { margin: 0 2px; font-size: clamp(12px, 2.8vw, 16px); visibility: hidden; flex-shrink: 0; }
+
   .problem-box {
     background: rgba(255,107,107,0.08);
     border: 1px solid rgba(255,107,107,0.2);
@@ -433,8 +437,16 @@
     <div class="node fast">5</div>
     <span class="null-node">→ null</span>
   </div>
-  <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
-    <span class="pink">slow↑ at 3</span> &nbsp;&nbsp; <span class="cyan">fast↑ at 5</span> (fast.next = null)
+  <div class="ptr-row">
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer">→</div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer">→</div>
+    <div class="ptr-cell" style="color:#90ee90;">slow↑</div>
+    <div class="ptr-spacer">→</div>
+    <div class="ptr-cell"></div>
+    <div class="ptr-spacer">→</div>
+    <div class="ptr-cell" style="color:#7fd4ff;">fast↑</div>
   </div>
 
   <hr class="divider">
