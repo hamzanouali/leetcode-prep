@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flatten Multilevel List — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  .ll-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .node {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .node.active { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .node.slow { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .node.fast { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+
+  .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+  .arrow.rev { color: #90ee90; }
+  .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
+
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  .multi-diagram {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9px, 2vw, 11px);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.8;
+    padding: 8px;
+    background: rgba(0,0,0,0.12);
+    border-radius: 6px;
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="title">Flatten Multilevel List</div>
+  <div class="subtitle">LC #430 | DFS / Stack Flattening</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">🔴 The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      A doubly linked list where nodes can have a <span class="orange">child</span> pointer to another list.<br>
+      <strong>Flatten</strong> it so all nodes are in a single level, in DFS order.
+    </div>
+  </div>
+
+  <!-- ═══════ MULTILEVEL DIAGRAM ═══════ -->
+  <div class="section-label">📐 Structure</div>
+  <div class="multi-diagram">
+    <span style="color:#ff9ecf;">1</span> ↔ <span style="color:#ff9ecf;">2</span> ↔ <span style="color:#ff9ecf;">3</span> ↔ <span style="color:#ff9ecf;">4</span> ↔ <span style="color:#ff9ecf;">5</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffb347;">↓ child</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#7fd4ff;">6</span> ↔ <span style="color:#7fd4ff;">7</span> ↔ <span style="color:#7fd4ff;">8</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffb347;">↓ child</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#90ee90;">9</span> ↔ <span style="color:#90ee90;">10</span>
+  </div>
+
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45);">
+    Flatten to: 1↔2↔3↔6↔7↔9↔10↔8↔4↔5
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ STRATEGY ═══════ -->
+  <div class="section-label">🧠 Strategy — Iterative</div>
+  <div class="solution-box">
+    <div class="chalk">
+      Walk the list. When you find a node with a <span class="orange">child</span>:<br>
+      <strong>1.</strong> Save <span class="cyan">next</span> (the rest of the current level).<br>
+      <strong>2.</strong> Set curr.next = <span class="orange">child</span>, child.prev = curr.<br>
+      <strong>3.</strong> Walk to the <strong>tail</strong> of the child list.<br>
+      <strong>4.</strong> Connect tail.next = <span class="cyan">saved next</span>.<br>
+      <strong>5.</strong> Clear the child pointer. Continue walking.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WALKTHROUGH ═══════ -->
+  <div class="section-label">📸 Walkthrough</div>
+
+  <div class="step-box">
+    <div class="step-title">At node 3 (has child → 6)</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Save next = node 4.<br>
+      3.next = 6, 6.prev = 3.<br>
+      Walk child to its tail (find tail of 6→7→8, but 7 has a child too!).<br>
+      We'll handle 7's child when we get there naturally.
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">At node 7 (has child → 9)</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Save next = node 8.<br>
+      7.next = 9, 9.prev = 7.<br>
+      Walk to tail of child: 9→10. Tail = 10.<br>
+      10.next = 8, 8.prev = 10.
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Back at child-list tail for node 3</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      The child list 6→7→9→10→8 has tail = 8.<br>
+      8.next = 4, 4.prev = 8.
+    </div>
+  </div>
+
+  <!-- ═══════ RESULT ═══════ -->
+  <div class="section-label">✅ Result</div>
+  <div class="ll-row">
+    <div class="node active">1</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">2</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">3</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">6</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">7</div>
+  </div>
+  <div class="ll-row">
+    <div class="node active">9</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">10</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">8</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">4</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">5</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE ═══════ -->
+  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">flatten</span>(head) {
+  <span class="kw">let</span> curr = head;
+
+  <span class="kw">while</span> (curr !== <span class="num">null</span>) {
+    <span class="kw">if</span> (curr.child) {
+      <span class="kw">const</span> next = curr.next; <span class="cm">// save</span>
+
+      <span class="cm">// Splice child in</span>
+      curr.next = curr.child;
+      curr.child.prev = curr;
+      curr.child = <span class="num">null</span>;
+
+      <span class="cm">// Find tail of the child list</span>
+      <span class="kw">let</span> tail = curr.next;
+      <span class="kw">while</span> (tail.next !== <span class="num">null</span>) {
+        tail = tail.next;
+      }
+
+      <span class="cm">// Connect tail to saved next</span>
+      tail.next = next;
+      <span class="kw">if</span> (next !== <span class="num">null</span>) {
+        next.prev = tail;
+      }
+    }
+
+    curr = curr.next;
+  }
+
+  <span class="kw">return</span> head;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ STACK APPROACH ═══════ -->
+  <div class="section-label">📚 Alternative: Stack</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      When you hit a child: <span class="cyan">push next onto stack</span>, follow the child.<br>
+      When you hit null (end of a level): <span class="orange">pop from stack</span>, continue there.<br>
+      Same result, more explicit DFS. O(depth) space for the stack.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
+    Iterative approach is O(1) space. Stack approach is O(depth).
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-label">💡 Key Insights</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <strong>1.</strong> The iterative approach handles <span class="orange">nested children</span> naturally — after splicing in a child, we continue walking. If the child list has its own children, we'll hit them.<br>
+      <strong>2.</strong> <strong>Don't forget</strong>: clear the child pointer (<span class="cyan">curr.child = null</span>) and set prev pointers (it's a doubly linked list).<br>
+      <strong>3.</strong> The "find tail" walk makes worst case O(n) per child, but total work is still O(n) — each node visited at most twice.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
