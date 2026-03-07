@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverse K-Group — Common Mistakes</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .back-btn {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    z-index: 2;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: rgba(255,255,255,0.75); }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    padding-top: 8px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 4px;
+  }
+
+  .chalk {
+    font-size: clamp(13px, 3vw, 16px);
+    color: rgba(255,255,255,0.85);
+    line-height: 1.5;
+  }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .green { color: #90ee90; }
+  .chalk .orange { color: #ffb347; }
+  .chalk strong { color: #ffe066; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 2px 0;
+  }
+
+  /* Mistake cards */
+  .mistake-card {
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .mistake-bad {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+  }
+
+  .mistake-label {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mistake-bad .mistake-label { color: #ff6b6b; }
+
+  .mistake-desc {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+  }
+  .mistake-desc .pink { color: #ff9ecf; }
+  .mistake-desc .cyan { color: #7fd4ff; }
+  .mistake-desc .green { color: #90ee90; }
+  .mistake-desc strong { color: #ffe066; }
+
+  .fix-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-top: 2px;
+  }
+  .fix-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: #90ee90;
+    margin-bottom: 2px;
+  }
+  .fix-text {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.65);
+    line-height: 1.4;
+  }
+  .fix-text strong { color: #ffe066; }
+  .fix-text .cyan { color: #7fd4ff; }
+  .fix-text .pink { color: #ff9ecf; }
+
+  .clue-box {
+    background: rgba(255,179,71,0.06);
+    border: 1px solid rgba(255,179,71,0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-top: 2px;
+  }
+  .clue-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: #ffb347;
+    margin-bottom: 2px;
+  }
+  .clue-text {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+  }
+
+  .insight {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .insight-title {
+    font-family: 'Permanent Marker', cursive;
+    color: #90ee90;
+    font-size: clamp(12px, 2.8vw, 15px);
+    margin-bottom: 4px;
+  }
+  .insight .chalk {
+    font-size: clamp(12px, 2.7vw, 14px);
+    color: rgba(255,255,255,0.7);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">< back</a>
+
+  <div class="title">Reverse K-Group</div>
+  <div class="subtitle">Common Mistakes -- LC #25</div>
+
+  <hr class="divider">
+
+  <div class="section-label">Mistake #1: Reversing without counting first</div>
+
+  <div class="mistake-card mistake-bad">
+    <div class="mistake-label">The Wrong Approach</div>
+    <div class="mistake-desc">
+      Start reversing immediately, then try to "undo" if the group has fewer than k nodes. This leads to <span class="pink">corrupted pointers</span> and infinite loops.
+    </div>
+    <div class="clue-box">
+      <div class="clue-label">What should have tipped you off</div>
+      <div class="clue-text">"If the number of nodes is not a multiple of k then left-out nodes should remain as-is." This means you MUST know the group size before touching anything.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">The Fix</div>
+      <div class="fix-text"><strong>Count first, reverse second.</strong> Walk k nodes ahead to verify the group is complete. Only then reverse. If fewer than k remain, stop.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Mistake #2: Losing the connection between groups</div>
+
+  <div class="mistake-card mistake-bad">
+    <div class="mistake-label">The Wrong Approach</div>
+    <div class="mistake-desc">
+      Reverse each group correctly but forget to <span class="pink">connect the tail of the previous group</span> to the new head of the current group. Result: the list breaks into disconnected segments.
+    </div>
+    <div class="clue-box">
+      <div class="clue-label">What should have tipped you off</div>
+      <div class="clue-text">After reversing [1,2,3] to [3,2,1], node 1 is now the TAIL. It needs to point to the head of the next reversed group -- but that head doesn't exist yet.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">The Fix</div>
+      <div class="fix-text">Track a <strong>groupPrev</strong> pointer. After reversing a group, <span class="cyan">groupPrev.next = new head</span> and update groupPrev to the old head (now the tail). A <span class="pink">dummy head</span> serves as the initial groupPrev.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Mistake #3: Not using a dummy head</div>
+
+  <div class="mistake-card mistake-bad">
+    <div class="mistake-label">The Wrong Approach</div>
+    <div class="mistake-desc">
+      Try to handle the first group as a special case. This leads to <span class="pink">duplicated logic</span> and bugs when k=1 or when the list length equals k exactly.
+    </div>
+    <div class="clue-box">
+      <div class="clue-label">What should have tipped you off</div>
+      <div class="clue-text">The very first group's reversal changes the head of the entire list. Any time the head can change, you need a dummy.</div>
+    </div>
+    <div class="fix-box">
+      <div class="fix-label">The Fix</div>
+      <div class="fix-text">Create <strong>dummy.next = head</strong>. Now every group (including the first) has a "previous tail" to connect to. Return <span class="cyan">dummy.next</span> at the end.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-title">The Mental Model</div>
+    <p class="chalk">
+      Think of it as a <strong>3-step loop</strong>:
+      <span class="cyan">1)</span> Count k nodes ahead (bail if short).
+      <span class="pink">2)</span> Reverse k nodes with prev/curr/next.
+      <span class="green">3)</span> Wire: groupPrev.next = new head, update groupPrev = old head.
+      Repeat until you can't count k.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mixed Drill — Pattern First, Then Solve</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .back-btn {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    z-index: 2;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: rgba(255,255,255,0.75); }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    padding-top: 8px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .instructions {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.55);
+    font-size: clamp(12px, 2.8vw, 15px);
+    text-align: center;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.12);
+    border-radius: 8px;
+    border: 1px dashed rgba(255,255,255,0.1);
+    line-height: 1.4;
+  }
+  .instructions strong { color: #ffe066; }
+  .instructions .pink { color: #ff9ecf; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 2px 0;
+  }
+
+  /* Drill cards */
+  .drill-card {
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .drill-num {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: rgba(255,255,255,0.3);
+    padding: 8px 12px 0 12px;
+  }
+
+  .drill-problem {
+    padding: 4px 12px 10px 12px;
+  }
+
+  .drill-title {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(14px, 3.2vw, 17px);
+    color: #ffe066;
+    line-height: 1.2;
+  }
+
+  .drill-desc {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+  .drill-constraints {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 4px;
+  }
+  .drill-constraints .pink { color: #ff9ecf; }
+
+  /* Step reveals */
+  .drill-step {
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+
+  .drill-step-header {
+    padding: 6px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .drill-step-header:hover { background: rgba(0,0,0,0.08); }
+
+  .drill-step-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(12px, 2.8vw, 14px);
+  }
+  .step-pattern .drill-step-label { color: #ffb347; }
+  .step-approach .drill-step-label { color: #7fd4ff; }
+  .step-code .drill-step-label { color: #90ee90; }
+
+  .drill-arrow {
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.3);
+    transition: transform 0.25s;
+  }
+  .drill-step.open .drill-arrow { transform: rotate(90deg); }
+
+  .drill-step-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .drill-step.open .drill-step-content { max-height: 800px; }
+
+  .drill-step-inner {
+    padding: 0 12px 10px 12px;
+  }
+
+  .pattern-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .pattern-tag {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    padding: 2px 10px;
+    border-radius: 20px;
+    background: rgba(255,224,102,0.12);
+    color: #ffe066;
+    border: 1px solid rgba(255,224,102,0.25);
+  }
+
+  .approach-text {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.5;
+  }
+  .approach-text strong { color: #ffe066; }
+  .approach-text .pink { color: #ff9ecf; }
+  .approach-text .cyan { color: #7fd4ff; }
+  .approach-text .green { color: #90ee90; }
+
+  .code-block {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.75);
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 8px 10px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-x: auto;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* Shuffle */
+  .shuffle-btn {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(12px, 2.8vw, 14px);
+    color: #7fd4ff;
+    background: rgba(127,212,255,0.08);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .shuffle-btn:hover {
+    background: rgba(127,212,255,0.15);
+    border-color: rgba(127,212,255,0.4);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">< back</a>
+
+  <div class="title">Mixed Drill</div>
+  <div class="subtitle">The Real Interview Flow</div>
+
+  <div class="instructions">
+    Read the problem. <strong>Step 1:</strong> pick the pattern. <strong>Step 2:</strong> plan the approach. <strong>Step 3:</strong> check the code. Reveal each step <span class="pink">only after committing</span> to your answer.
+  </div>
+
+  <button class="shuffle-btn" onclick="shuffleDrills()">Shuffle Order</button>
+
+  <hr class="divider">
+
+  <div id="drill-list">
+
+    <!-- DRILL 1 -->
+    <div class="drill-card">
+      <div class="drill-num">Drill 1</div>
+      <div class="drill-problem">
+        <div class="drill-title">Given a linked list, return the node where a cycle begins. If no cycle, return null.</div>
+        <div class="drill-constraints">Constraint: <span class="pink">O(1) extra space</span></div>
+      </div>
+      <div class="drill-step step-pattern">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 1: What pattern?</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="pattern-tags">
+            <span class="pattern-tag">Floyd's Cycle Detection</span>
+            <span class="pattern-tag">Slow/Fast + Reset</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-approach">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 2: Approach</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="approach-text">
+            <strong>Phase 1:</strong> Slow (1 step) and fast (2 steps) until they meet.<br>
+            <strong>Phase 2:</strong> Reset one pointer to head. Move both at speed 1. They meet at the <span class="cyan">cycle entry</span>.<br>
+            O(1) space rules out a hashset approach.
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-code">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 3: Code</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">detectCycle</span>(head) {
+  <span class="kw">let</span> slow = head, fast = head;
+  <span class="kw">while</span> (fast && fast.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+    <span class="kw">if</span> (slow === fast) {
+      slow = head; <span class="cm">// reset to head</span>
+      <span class="kw">while</span> (slow !== fast) {
+        slow = slow.next;
+        fast = fast.next;
+      }
+      <span class="kw">return</span> slow; <span class="cm">// cycle start</span>
+    }
+  }
+  <span class="kw">return null</span>;
+}</div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- DRILL 2 -->
+    <div class="drill-card">
+      <div class="drill-num">Drill 2</div>
+      <div class="drill-problem">
+        <div class="drill-title">Given a linked list where nodes have duplicates (sorted), remove ALL nodes that have duplicates. Keep only distinct values.</div>
+        <div class="drill-constraints">Example: 1->2->3->3->4->4->5 becomes 1->2->5</div>
+      </div>
+      <div class="drill-step step-pattern">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 1: What pattern?</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="pattern-tags">
+            <span class="pattern-tag">Dummy Head</span>
+            <span class="pattern-tag">Pointer Skip</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-approach">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 2: Approach</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="approach-text">
+            Head could be removed (1->1->2 becomes 2), so <span class="pink">dummy head</span> is essential.<br>
+            Walk with a <span class="cyan">prev</span> pointer. When you find duplicates, skip ALL of them. prev.next jumps over the entire duplicate group.
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-code">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 3: Code</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">deleteDuplicates</span>(head) {
+  <span class="kw">const</span> dummy = { next: head };
+  <span class="kw">let</span> prev = dummy;
+  <span class="kw">while</span> (prev.next) {
+    <span class="kw">let</span> curr = prev.next;
+    <span class="kw">while</span> (curr.next && curr.next.val === curr.val) {
+      curr = curr.next; <span class="cm">// skip dupes</span>
+    }
+    <span class="kw">if</span> (prev.next === curr) {
+      prev = prev.next; <span class="cm">// no dupes, advance</span>
+    } <span class="kw">else</span> {
+      prev.next = curr.next; <span class="cm">// skip ALL dupes</span>
+    }
+  }
+  <span class="kw">return</span> dummy.next;
+}</div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- DRILL 3 -->
+    <div class="drill-card">
+      <div class="drill-num">Drill 3</div>
+      <div class="drill-problem">
+        <div class="drill-title">Given a singly linked list L0 -> L1 -> ... -> Ln, reorder it to L0 -> Ln -> L1 -> Ln-1 -> L2 -> Ln-2 -> ...</div>
+        <div class="drill-constraints">Constraint: <span class="pink">O(1) extra space, modify in-place</span></div>
+      </div>
+      <div class="drill-step step-pattern">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 1: What pattern?</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="pattern-tags">
+            <span class="pattern-tag">Slow/Fast (Find Middle)</span>
+            <span class="pattern-tag">Reversal</span>
+            <span class="pattern-tag">Interleave / Merge</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-approach">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 2: Approach</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="approach-text">
+            Three steps:<br>
+            <strong>1)</strong> Find middle with <span class="cyan">slow/fast</span><br>
+            <strong>2)</strong> <span class="pink">Reverse</span> the second half<br>
+            <strong>3)</strong> <span class="green">Interleave</span> first half and reversed second half<br>
+            This is the same skeleton as palindrome check, but merge instead of compare.
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-code">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 3: Code</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">reorderList</span>(head) {
+  <span class="cm">// 1. Find middle</span>
+  <span class="kw">let</span> slow = head, fast = head;
+  <span class="kw">while</span> (fast.next && fast.next.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  <span class="cm">// 2. Reverse second half</span>
+  <span class="kw">let</span> prev = <span class="kw">null</span>, curr = slow.next;
+  slow.next = <span class="kw">null</span>; <span class="cm">// cut</span>
+  <span class="kw">while</span> (curr) {
+    <span class="kw">const</span> next = curr.next;
+    curr.next = prev;
+    prev = curr; curr = next;
+  }
+  <span class="cm">// 3. Interleave</span>
+  <span class="kw">let</span> l1 = head, l2 = prev;
+  <span class="kw">while</span> (l2) {
+    <span class="kw">const</span> t1 = l1.next, t2 = l2.next;
+    l1.next = l2; l2.next = t1;
+    l1 = t1; l2 = t2;
+  }
+}</div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- DRILL 4 -->
+    <div class="drill-card">
+      <div class="drill-num">Drill 4</div>
+      <div class="drill-problem">
+        <div class="drill-title">Given a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x. Preserve relative order.</div>
+        <div class="drill-constraints">Example: 1->4->3->2->5->2 with x=3 becomes 1->2->2->4->3->5</div>
+      </div>
+      <div class="drill-step step-pattern">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 1: What pattern?</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="pattern-tags">
+            <span class="pattern-tag">Two Dummy Heads</span>
+            <span class="pattern-tag">Split & Reconnect</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-approach">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 2: Approach</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="approach-text">
+            Create <span class="pink">two dummy heads</span>: one for the "less" list, one for the "greater-or-equal" list.<br>
+            Walk the original list, appending each node to the right list.<br>
+            Connect less-tail.next = greater-head. Set greater-tail.next = null (important!).
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-code">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 3: Code</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">partition</span>(head, x) {
+  <span class="kw">const</span> lessD = { next: <span class="kw">null</span> };
+  <span class="kw">const</span> greatD = { next: <span class="kw">null</span> };
+  <span class="kw">let</span> l = lessD, g = greatD, curr = head;
+  <span class="kw">while</span> (curr) {
+    <span class="kw">if</span> (curr.val < x) {
+      l.next = curr; l = l.next;
+    } <span class="kw">else</span> {
+      g.next = curr; g = g.next;
+    }
+    curr = curr.next;
+  }
+  g.next = <span class="kw">null</span>;  <span class="cm">// terminate!</span>
+  l.next = greatD.next; <span class="cm">// connect</span>
+  <span class="kw">return</span> lessD.next;
+}</div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- DRILL 5 -->
+    <div class="drill-card">
+      <div class="drill-num">Drill 5</div>
+      <div class="drill-problem">
+        <div class="drill-title">Sort a linked list in ascending order.</div>
+        <div class="drill-constraints">Constraint: <span class="pink">O(n log n) time, O(1) space</span></div>
+      </div>
+      <div class="drill-step step-pattern">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 1: What pattern?</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="pattern-tags">
+            <span class="pattern-tag">Merge Sort</span>
+            <span class="pattern-tag">Slow/Fast (Split)</span>
+            <span class="pattern-tag">Dummy Head (Merge)</span>
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-approach">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 2: Approach</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="approach-text">
+            O(n log n) + linked list = <span class="pink">merge sort</span>. Quick sort needs random access; merge sort doesn't.<br>
+            <strong>Split:</strong> slow/fast to find middle, cut in half.<br>
+            <strong>Recurse:</strong> sort each half.<br>
+            <strong>Merge:</strong> dummy head + comparison walk (same as LC #21).
+          </div>
+        </div></div>
+      </div>
+      <div class="drill-step step-code">
+        <div class="drill-step-header" onclick="toggleStep(this)">
+          <span class="drill-step-label">Step 3: Code</span>
+          <span class="drill-arrow">&#9654;</span>
+        </div>
+        <div class="drill-step-content"><div class="drill-step-inner">
+          <div class="code-block"><span class="kw">function</span> <span class="fn">sortList</span>(head) {
+  <span class="kw">if</span> (!head || !head.next) <span class="kw">return</span> head;
+  <span class="cm">// Split</span>
+  <span class="kw">let</span> slow = head, fast = head.next;
+  <span class="kw">while</span> (fast && fast.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  <span class="kw">const</span> mid = slow.next;
+  slow.next = <span class="kw">null</span>;
+  <span class="cm">// Sort halves + merge</span>
+  <span class="kw">return</span> <span class="fn">merge</span>(<span class="fn">sortList</span>(head), <span class="fn">sortList</span>(mid));
+}
+
+<span class="kw">function</span> <span class="fn">merge</span>(l1, l2) {
+  <span class="kw">const</span> d = { next: <span class="kw">null</span> };
+  <span class="kw">let</span> t = d;
+  <span class="kw">while</span> (l1 && l2) {
+    <span class="kw">if</span> (l1.val <= l2.val) {
+      t.next = l1; l1 = l1.next;
+    } <span class="kw">else</span> {
+      t.next = l2; l2 = l2.next;
+    }
+    t = t.next;
+  }
+  t.next = l1 || l2;
+  <span class="kw">return</span> d.next;
+}</div>
+        </div></div>
+      </div>
+    </div>
+
+  </div><!-- /drill-list -->
+
+</div><!-- /board -->
+
+<script>
+  function toggleStep(header) {
+    header.closest('.drill-step').classList.toggle('open');
+  }
+
+  function shuffleDrills() {
+    const list = document.getElementById('drill-list');
+    const cards = Array.from(list.querySelectorAll('.drill-card'));
+
+    // Fisher-Yates
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+
+    // Re-number and re-append
+    cards.forEach((card, idx) => {
+      card.querySelector('.drill-num').textContent = 'Drill ' + (idx + 1);
+      list.appendChild(card);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Triggers — When to Use What</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .back-btn {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 13px);
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    z-index: 2;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: rgba(255,255,255,0.75); }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    padding-top: 8px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 4px;
+  }
+
+  .chalk {
+    font-size: clamp(13px, 3vw, 16px);
+    color: rgba(255,255,255,0.85);
+    line-height: 1.5;
+  }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .green { color: #90ee90; }
+  .chalk .orange { color: #ffb347; }
+  .chalk strong { color: #ffe066; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 2px 0;
+  }
+
+  /* Trigger cards */
+  .trigger-card {
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .trigger-pattern {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(13px, 3vw, 16px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trigger-icon {
+    font-size: clamp(16px, 3.5vw, 20px);
+    flex-shrink: 0;
+  }
+
+  .trigger-clues {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-left: 4px;
+  }
+
+  .clue {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.75);
+    line-height: 1.3;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .clue::before {
+    content: '\2192';
+    color: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+  .clue .kw {
+    color: #ff9ecf;
+    font-weight: 600;
+  }
+  .clue .why {
+    color: rgba(255,255,255,0.45);
+    font-size: clamp(11px, 2.4vw, 13px);
+  }
+
+  .trigger-examples {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.4);
+    padding-left: 4px;
+  }
+  .trigger-examples strong {
+    color: rgba(255,224,102,0.5);
+  }
+
+  /* Decision flowchart */
+  .flow-box {
+    background: rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,179,71,0.2);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .flow-title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffb347;
+    font-size: clamp(13px, 3vw, 16px);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .flow-step {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.4;
+    padding: 4px 0 4px 8px;
+    border-left: 2px solid rgba(255,179,71,0.25);
+    margin-left: 6px;
+    margin-bottom: 2px;
+  }
+  .flow-step .q { color: #ffb347; font-weight: 700; }
+  .flow-step .a { color: #90ee90; }
+  .flow-step .no { color: #ff6b6b; }
+
+  /* Insight box */
+  .insight {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .insight-title {
+    font-family: 'Permanent Marker', cursive;
+    color: #90ee90;
+    font-size: clamp(12px, 2.8vw, 15px);
+    margin-bottom: 4px;
+  }
+  .insight .chalk {
+    font-size: clamp(12px, 2.7vw, 14px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Combo section */
+  .combo-card {
+    background: rgba(0,0,0,0.15);
+    border: 1px dashed rgba(255,224,102,0.15);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .combo-name {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: #ffe066;
+  }
+  .combo-recipe {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .combo-recipe .pink { color: #ff9ecf; }
+  .combo-recipe .cyan { color: #7fd4ff; }
+  .combo-recipe .green { color: #90ee90; }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">< back</a>
+
+  <div class="title">Pattern Triggers</div>
+  <div class="subtitle">How to read a problem and know which pattern to use</div>
+
+  <hr class="divider">
+
+  <div class="section-label">The 5 Core Patterns</div>
+  <p class="chalk" style="font-size:clamp(11px,2.4vw,13px); color:rgba(255,255,255,0.5);">
+    When you see these <span class="pink">keywords or constraints</span>, reach for these patterns:
+  </p>
+
+  <!-- PATTERN 1: Dummy Head -->
+  <div class="trigger-card" style="border-color: rgba(144,238,144,0.2);">
+    <div class="trigger-pattern" style="color: #90ee90;">Dummy Head Node</div>
+    <div class="trigger-clues">
+      <div class="clue"><span><span class="kw">"head might change"</span> -- deletion/insertion at front</span></div>
+      <div class="clue"><span><span class="kw">"merge two lists"</span> -- need a neutral starting point</span></div>
+      <div class="clue"><span><span class="kw">"remove nodes"</span> where head could be the target</span></div>
+      <div class="clue"><span><span class="kw">"partition"</span> / <span class="kw">"split into groups"</span> -- one dummy per group</span></div>
+    </div>
+    <div class="trigger-examples"><strong>Problems:</strong> LC #21, #82, #86, #19, #24, #25, #92</div>
+  </div>
+
+  <!-- PATTERN 2: Slow/Fast -->
+  <div class="trigger-card" style="border-color: rgba(127,212,255,0.2);">
+    <div class="trigger-pattern" style="color: #7fd4ff;">Slow / Fast Pointers</div>
+    <div class="trigger-clues">
+      <div class="clue"><span><span class="kw">"find middle"</span> -- single pass, no length</span></div>
+      <div class="clue"><span><span class="kw">"detect cycle"</span> / <span class="kw">"circular"</span> -- O(1) space required</span></div>
+      <div class="clue"><span><span class="kw">"k-th from end"</span> -- gap technique variant</span></div>
+      <div class="clue"><span><span class="kw">"palindrome"</span> -- need middle to split and reverse</span></div>
+    </div>
+    <div class="trigger-examples"><strong>Problems:</strong> LC #876, #141, #142, #234, #148, #143</div>
+  </div>
+
+  <!-- PATTERN 3: Reversal -->
+  <div class="trigger-card" style="border-color: rgba(255,158,207,0.2);">
+    <div class="trigger-pattern" style="color: #ff9ecf;">Iterative Reversal (prev/curr/next)</div>
+    <div class="trigger-clues">
+      <div class="clue"><span><span class="kw">"reverse"</span> anywhere in the problem name</span></div>
+      <div class="clue"><span><span class="kw">"swap adjacent"</span> / <span class="kw">"in groups of k"</span></span></div>
+      <div class="clue"><span><span class="kw">"reorder"</span> -- often needs reversing second half</span></div>
+      <div class="clue"><span><span class="kw">"palindrome check"</span> -- reverse half, then compare</span></div>
+    </div>
+    <div class="trigger-examples"><strong>Problems:</strong> LC #206, #92, #24, #25, #234, #143</div>
+  </div>
+
+  <!-- PATTERN 4: Two-Pointer Gap -->
+  <div class="trigger-card" style="border-color: rgba(255,179,71,0.2);">
+    <div class="trigger-pattern" style="color: #ffb347;">Two-Pointer Gap</div>
+    <div class="trigger-clues">
+      <div class="clue"><span><span class="kw">"n-th from end"</span> / <span class="kw">"k-th from end"</span> -- classic gap</span></div>
+      <div class="clue"><span><span class="kw">"one pass"</span> + need position relative to tail</span></div>
+      <div class="clue"><span><span class="kw">"without knowing length"</span> -- gap avoids counting</span></div>
+    </div>
+    <div class="trigger-examples"><strong>Problems:</strong> LC #19, #61</div>
+  </div>
+
+  <!-- PATTERN 5: Hashmap -->
+  <div class="trigger-card" style="border-color: rgba(255,224,102,0.2);">
+    <div class="trigger-pattern" style="color: #ffe066;">Hashmap + Linked List</div>
+    <div class="trigger-clues">
+      <div class="clue"><span><span class="kw">"O(1) get and put"</span> -- need both lookup + ordering</span></div>
+      <div class="clue"><span><span class="kw">"deep copy"</span> / <span class="kw">"clone"</span> with random pointers</span></div>
+      <div class="clue"><span><span class="kw">"cache"</span> / <span class="kw">"LRU"</span> / <span class="kw">"LFU"</span> -- map for speed, list for order</span></div>
+    </div>
+    <div class="trigger-examples"><strong>Problems:</strong> LC #146, #138, #460</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- DECISION FLOWCHART -->
+  <div class="flow-box">
+    <div class="flow-title">Quick Decision Flowchart</div>
+    <div class="flow-step">
+      <span class="q">Does the problem say "reverse"?</span><br>
+      <span class="a">Yes</span> -- Use <span style="color:#ff9ecf;">prev/curr/next reversal</span>. Add dummy head if reversing from position 1.
+    </div>
+    <div class="flow-step">
+      <span class="q">Does it mention cycle, middle, or palindrome?</span><br>
+      <span class="a">Yes</span> -- Use <span style="color:#7fd4ff;">slow/fast pointers</span>. Palindrome = slow/fast + reversal combo.
+    </div>
+    <div class="flow-step">
+      <span class="q">Does it say "k-th/n-th from end"?</span><br>
+      <span class="a">Yes</span> -- Use <span style="color:#ffb347;">two-pointer gap</span> + dummy head.
+    </div>
+    <div class="flow-step">
+      <span class="q">Could the head node change? (deletion, merge, partition)</span><br>
+      <span class="a">Yes</span> -- Use <span style="color:#90ee90;">dummy head</span>. Create 2 dummies for split/merge problems.
+    </div>
+    <div class="flow-step">
+      <span class="q">Need O(1) lookup + ordering? Random pointers? Cache?</span><br>
+      <span class="a">Yes</span> -- Use <span style="color:#ffe066;">hashmap + linked list</span>.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section-label">Pattern Combos</div>
+  <p class="chalk" style="font-size:clamp(11px,2.4vw,13px); color:rgba(255,255,255,0.5);">
+    Harder problems combine multiple patterns. Learn to spot the <strong>recipe</strong>:
+  </p>
+
+  <div class="combo-card">
+    <div class="combo-name">Palindrome Check (LC #234)</div>
+    <div class="combo-recipe"><span class="cyan">slow/fast</span> (find middle) + <span class="pink">reversal</span> (flip second half) + compare</div>
+  </div>
+
+  <div class="combo-card">
+    <div class="combo-name">Sort List (LC #148)</div>
+    <div class="combo-recipe"><span class="cyan">slow/fast</span> (split) + merge sort recursion + <span class="green">dummy head</span> merge</div>
+  </div>
+
+  <div class="combo-card">
+    <div class="combo-name">Reorder List (LC #143)</div>
+    <div class="combo-recipe"><span class="cyan">slow/fast</span> (find middle) + <span class="pink">reversal</span> (flip second half) + interleave</div>
+  </div>
+
+  <div class="combo-card">
+    <div class="combo-name">Reverse K-Group (LC #25)</div>
+    <div class="combo-recipe">count k + <span class="pink">sublist reversal</span> + <span class="green">dummy head</span> reconnection loop</div>
+  </div>
+
+  <div class="combo-card">
+    <div class="combo-name">LRU Cache (LC #146)</div>
+    <div class="combo-recipe">hashmap (O(1) lookup) + doubly linked list + <span class="green">2 dummy sentinels</span> (head/tail)</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-title">The Real Interview Skill</div>
+    <p class="chalk">
+      Knowing the patterns is only half the battle. The other half is <strong>reading the constraints</strong>:
+      <span class="pink">O(1) space?</span> Rules out hashmap -- think pointers.
+      <span class="pink">O(n log n)?</span> Think merge sort.
+      <span class="pink">Single pass?</span> Think two-pointer gap or slow/fast.
+      <span class="pink">"In-place"?</span> Think reversal + pointer rewiring.
+    </p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-title">When You're Stuck</div>
+    <p class="chalk">
+      Ask yourself: <strong>"What's annoying about this problem?"</strong>
+      If head might change -- <span class="green">dummy head</span>.
+      If you need to find a position without length -- <span class="cyan">slow/fast</span>.
+      If order needs to flip -- <span class="pink">reversal</span>.
+      If you need speed + order -- <span style="color:#ffe066;">hashmap + list</span>.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
