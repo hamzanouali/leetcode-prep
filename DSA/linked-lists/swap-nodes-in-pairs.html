@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swap Nodes in Pairs — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  .ll-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .node {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .node.active { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .node.slow { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .node.fast { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .node.dummy { background: rgba(255,179,71,0.08); border-color: #ffb347; color: #ffb347; border-style: dashed; }
+  .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+
+  .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+  .arrow.rev { color: #90ee90; }
+  .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
+
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="title">Swap Nodes in Pairs</div>
+  <div class="subtitle">LC #24 | K-Group Reversal where K=2</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">🔴 The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given a linked list, swap every <strong>two adjacent nodes</strong>.<br>
+      Return the modified list. Don't modify node values — change the <span class="pink">links</span>.
+    </div>
+  </div>
+
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); text-align:center;">Input: [1] → [2] → [3] → [4] → null</div>
+  <div class="ll-row">
+    <div class="node slow">1</div>
+    <span class="arrow">→</span>
+    <div class="node fast">2</div>
+    <span class="arrow">→</span>
+    <div class="node slow">3</div>
+    <span class="arrow">→</span>
+    <div class="node fast">4</div>
+    <span class="null-node">→ null</span>
+  </div>
+  <div class="chalk" style="text-align:center; font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.4);">
+    <span class="pink">pair 1</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="cyan">pair 2</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ STRATEGY ═══════ -->
+  <div class="section-label">🧠 Strategy</div>
+  <div class="solution-box">
+    <div class="chalk">
+      <strong>1.</strong> Use a <span class="orange">dummy</span> node before head.<br>
+      <strong>2.</strong> For each pair, we have: <strong>prev → first → second → ...</strong><br>
+      <strong>3.</strong> Rewire to: <strong>prev → second → first → ...</strong><br>
+      <strong>4.</strong> Advance prev to <strong>first</strong> (which is now second in the pair).
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WALKTHROUGH ═══════ -->
+  <div class="section-label">📸 Walkthrough</div>
+
+  <div class="step-box">
+    <div class="step-title">Swap Pair 1: nodes 1 & 2</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      prev=D, first=1, second=2<br>
+      <strong>1.</strong> first.next = second.next <span style="color:rgba(255,255,255,0.4);">(1 → 3)</span><br>
+      <strong>2.</strong> second.next = first <span style="color:rgba(255,255,255,0.4);">(2 → 1)</span><br>
+      <strong>3.</strong> prev.next = second <span style="color:rgba(255,255,255,0.4);">(D → 2)</span>
+    </div>
+    <div class="ll-row">
+      <div class="node dummy">D</div>
+      <span class="arrow rev">→</span>
+      <div class="node active">2</div>
+      <span class="arrow rev">→</span>
+      <div class="node active">1</div>
+      <span class="arrow">→</span>
+      <div class="node dim">3</div>
+      <span class="arrow">→</span>
+      <div class="node dim">4</div>
+      <span class="null-node">→ null</span>
+    </div>
+    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">prev advances to node 1</div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Swap Pair 2: nodes 3 & 4</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      prev=1, first=3, second=4<br>
+      Same 3 pointer moves.
+    </div>
+    <div class="ll-row">
+      <div class="node dim">2</div>
+      <span class="arrow">→</span>
+      <div class="node dim">1</div>
+      <span class="arrow rev">→</span>
+      <div class="node active">4</div>
+      <span class="arrow rev">→</span>
+      <div class="node active">3</div>
+      <span class="null-node">→ null</span>
+    </div>
+  </div>
+
+  <!-- ═══════ RESULT ═══════ -->
+  <div class="section-label">✅ Result</div>
+  <div class="ll-row">
+    <div class="node active">2</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">1</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">4</div>
+    <span class="arrow rev">→</span>
+    <div class="node active">3</div>
+    <span class="null-node">→ null</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE ═══════ -->
+  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">swapPairs</span>(head) {
+  <span class="kw">const</span> dummy = { next: head };
+  <span class="kw">let</span> prev = dummy;
+
+  <span class="kw">while</span> (prev.next !== <span class="num">null</span> && prev.next.next !== <span class="num">null</span>) {
+    <span class="kw">const</span> first = prev.next;
+    <span class="kw">const</span> second = first.next;
+
+    <span class="cm">// Swap</span>
+    first.next = second.next;
+    second.next = first;
+    prev.next = second;
+
+    <span class="cm">// Advance (prev moves to first, which is now 2nd)</span>
+    prev = first;
+  }
+
+  <span class="kw">return</span> dummy.next;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ ODD LENGTH ═══════ -->
+  <div class="section-label">⚠️ Odd Length?</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      If the list has an odd number of nodes, the <strong>last node</strong> has no pair → leave it alone.<br>
+      The while condition <span class="cyan">prev.next.next !== null</span> handles this — it won't enter the loop if there's only one node left.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-label">💡 Key Insights</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <strong>1.</strong> This is <span class="pink">K-Group reversal where K=2</span> — the simplest case. Master this before tackling K-Group.<br>
+      <strong>2.</strong> The 3-pointer swap (first.next, second.next, prev.next) is the core pattern.<br>
+      <strong>3.</strong> <span class="orange">prev advances to first</span> (not second!) because after the swap, first is in the second position — exactly where prev needs to be for the next pair.
+    </div>
+  </div>
+
+  <div class="insight" style="border-left-color:#7fd4ff; background:rgba(127,212,255,0.04);">
+    <div class="insight-label" style="color:#7fd4ff;">🔗 Builds On</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <span class="cyan">Dummy Head</span> + <span class="pink">Reversal</span> techniques. Steps up to <strong>Reverse K-Group</strong> (LC #25).
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
