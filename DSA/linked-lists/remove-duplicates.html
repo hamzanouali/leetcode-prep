@@ -218,12 +218,35 @@
     border-top: 1px dashed rgba(255,255,255,0.12);
     margin: 5px 0;
   }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
 </style>
 </head>
 <body>
 <div class="board">
 
-  <div class="title">Remove Duplicates</div>
+    <a class="back-btn" href="../../index.html">← Back</a>
+
+<div class="title">Remove Duplicates</div>
   <div class="subtitle">LC #83 (keep one) / LC #82 (remove all) | Sorted List</div>
 
   <!-- ═══════ PROBLEM ═══════ -->
