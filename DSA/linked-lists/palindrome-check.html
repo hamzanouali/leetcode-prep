@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palindrome Check — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  .ll-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .node {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .node.active { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .node.slow { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .node.fast { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .node.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+
+  .arrow { color: rgba(255,255,255,0.5); font-size: clamp(12px, 2.8vw, 16px); margin: 0 2px; flex-shrink: 0; }
+  .arrow.rev { color: #90ee90; }
+  .null-node { font-family: 'Caveat', cursive; font-size: clamp(11px, 2.5vw, 14px); color: rgba(255,255,255,0.3); margin-left: 2px; }
+
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="title">Palindrome Check</div>
+  <div class="subtitle">LC #234 | Find Middle + Reverse + Compare</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">🔴 The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given the <strong>head</strong> of a singly linked list, determine if it is a <span class="pink">palindrome</span>.<br>
+      Do it in <strong>O(1) space</strong> (no array copy).
+    </div>
+  </div>
+
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); text-align:center;">Example: [1] → [2] → [3] → [2] → [1] → null (palindrome!)</div>
+  <div class="ll-row">
+    <div class="node slow">1</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node active">3</div>
+    <span class="arrow">→</span>
+    <div class="node dim">2</div>
+    <span class="arrow">→</span>
+    <div class="node slow">1</div>
+    <span class="null-node">→ null</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ STRATEGY ═══════ -->
+  <div class="section-label">🧠 Strategy — 3 Steps</div>
+  <div class="solution-box">
+    <div class="chalk">
+      <strong>Step 1:</strong> <span class="pink">Find the middle</span> (slow/fast pointers).<br>
+      <strong>Step 2:</strong> <span class="cyan">Reverse</span> the second half.<br>
+      <strong>Step 3:</strong> <span class="green">Compare</span> first half with reversed second half.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ STEP 1 ═══════ -->
+  <div class="step-box">
+    <div class="step-title">Step 1: Find Middle</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Use slow/fast. When fast reaches end, slow is at middle.
+    </div>
+    <div class="ll-row">
+      <div class="node dim">1</div>
+      <span class="arrow">→</span>
+      <div class="node dim">2</div>
+      <span class="arrow">→</span>
+      <div class="node active" style="border-width:3px;">3</div>
+      <span class="arrow">→</span>
+      <div class="node dim">2</div>
+      <span class="arrow">→</span>
+      <div class="node dim">1</div>
+      <span class="null-node">→ null</span>
+    </div>
+    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:#90ee90;">slow stops at node 3</div>
+  </div>
+
+  <!-- ═══════ STEP 2 ═══════ -->
+  <div class="step-box">
+    <div class="step-title">Step 2: Reverse Second Half</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Reverse from slow.next onward.
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.45); margin-top:2px;">
+      Before: 3 → [2] → [1] → null<br>
+      After:  3 &nbsp;&nbsp; [1] → [2] → null
+    </div>
+    <div class="ll-row">
+      <div class="node dim">1</div>
+      <span class="arrow">→</span>
+      <div class="node dim">2</div>
+      <span class="arrow">→</span>
+      <div class="node dim">3</div>
+      <span style="color:rgba(255,255,255,0.2); margin: 0 6px;">|</span>
+      <div class="node fast">1</div>
+      <span class="arrow rev">→</span>
+      <div class="node fast">2</div>
+      <span class="null-node">→ null</span>
+    </div>
+    <div class="chalk" style="text-align:center; font-size:clamp(9px,2vw,11px); color:rgba(255,255,255,0.4);">
+      <span class="pink">first half</span> &nbsp;&nbsp;&nbsp; <span class="cyan">reversed second half</span>
+    </div>
+  </div>
+
+  <!-- ═══════ STEP 3 ═══════ -->
+  <div class="step-box">
+    <div class="step-title">Step 3: Compare</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Walk both halves. Compare values node by node.
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.5); margin-top:2px;">
+      p1=1, p2=1 → match!<br>
+      p1=2, p2=2 → match!<br>
+      p2=null → done. <span class="green">It's a palindrome!</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE ═══════ -->
+  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">isPalindrome</span>(head) {
+  <span class="cm">// Step 1: Find middle</span>
+  <span class="kw">let</span> slow = head, fast = head;
+  <span class="kw">while</span> (fast !== <span class="num">null</span> && fast.next !== <span class="num">null</span>) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+
+  <span class="cm">// Step 2: Reverse second half</span>
+  <span class="kw">let</span> prev = <span class="num">null</span>, curr = slow;
+  <span class="kw">while</span> (curr !== <span class="num">null</span>) {
+    <span class="kw">const</span> next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+
+  <span class="cm">// Step 3: Compare halves</span>
+  <span class="kw">let</span> p1 = head, p2 = prev;
+  <span class="kw">while</span> (p2 !== <span class="num">null</span>) {
+    <span class="kw">if</span> (p1.val !== p2.val) <span class="kw">return false</span>;
+    p1 = p1.next;
+    p2 = p2.next;
+  }
+
+  <span class="kw">return true</span>;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ EVEN VS ODD ═══════ -->
+  <div class="section-label">⚠️ Even vs Odd Length</div>
+  <div class="step-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      <strong>Odd</strong> (1→2→3→2→1): slow lands on 3. We reverse from 3 onward. The middle node is shared — doesn't matter since comparison walks until p2 hits null.<br><br>
+      <strong>Even</strong> (1→2→2→1): slow lands on the 2nd "2". Reverse gives us [1→2] and [1→2]. Both halves match perfectly.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="insight">
+    <div class="insight-label">💡 Key Insights</div>
+    <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
+      <strong>1.</strong> This combines <strong>three</strong> Level 1 patterns: <span class="pink">find middle</span> + <span class="cyan">reverse</span> + <span class="green">two-pointer compare</span>.<br>
+      <strong>2.</strong> It's destructive — modifies the list. In interviews, mention you could reverse back to restore the original list.<br>
+      <strong>3.</strong> The O(n) space approach (copy to array, check palindrome) is easier but less impressive. This O(1) space version shows mastery.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
