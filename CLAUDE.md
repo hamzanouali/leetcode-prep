@@ -40,3 +40,24 @@ Each board follows: Title → Problem statement → Visual diagram → Solution 
 When creating new lecture boards, copy the style/theme from existing files (e.g., `slow-fast-pointers.html` is the most comprehensive template). The files in `TODO.md` list remaining patterns to build, organized in dependency levels. Code examples are in JavaScript.
 
 Note: Some existing files (`dummy-head-node.html`, `reverse-iterative.html`) are UTF-16 encoded with wide spacing between characters. The newest file (`slow-fast-pointers.html`) uses standard UTF-8 — prefer UTF-8 for new files.
+
+### Pointer Label Alignment
+
+**Do NOT use `&nbsp;` spacing to align pointer labels under nodes.** It breaks across screen sizes. Instead use the `.ptr-row` / `.ptr-cell` / `.ptr-spacer` flex system that mirrors the `.ll-row` layout:
+- `.ptr-row` — flex container matching `.ll-row`
+- `.ptr-cell` — same width as `.node`, holds the label text (e.g. `↑bL`, `↑curr`)
+- `.ptr-spacer` — invisible spacer matching `.arrow` width
+
+### Navigation
+
+- Boards that have multiple explanation versions use `.nav-tabs` pill links at the top to switch between versions.
+- All boards should include a `.back-btn` linking to `../../index.html` (the table of contents).
+
+## Visual QA with Playwright
+
+When creating or editing boards, use Playwright to screenshot and verify pointer label alignment:
+
+1. Start a dev server: `python3 -m http.server 8765 &`
+2. Use Playwright's `browser_navigate` to `http://localhost:8765/DSA/linked-lists/<file>.html`
+3. Take element screenshots of `.ll-row` + `.ptr-row` combos to verify labels align under the correct nodes
+4. **Clean up after testing**: remove `.screenshots/` and `.playwright-mcp/` directories, kill the server (`kill $(lsof -t -i:8765)`)

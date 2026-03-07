@@ -253,10 +253,55 @@
     text-align: center;
     margin-top: -1px;
   }
+
+  .ptr-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin-top: -2px;
+  }
+  .ptr-cell {
+    width: clamp(30px, 7vw, 38px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    flex-shrink: 0;
+  }
+  .ptr-spacer {
+    margin: 0 2px;
+    font-size: clamp(12px, 2.8vw, 16px);
+    visibility: hidden;
+    flex-shrink: 0;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
 </style>
 </head>
 <body>
 <div class="board">
+
+  <a class="back-btn" href="../../index.html">← Back</a>
 
   <div class="nav-tabs">
     <a class="active" href="reverse-between.html">v1: Insert at Front</a>
@@ -290,8 +335,16 @@
     <div class="node dim">5</div>
     <span class="null-node">→ null</span>
   </div>
-  <div class="ptr-label" style="color:rgba(255,255,255,0.4);">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="pink">← reverse this section →</span>
+  <div class="ptr-row">
+    <div class="ptr-cell"></div>
+    <span class="ptr-spacer">→</span>
+    <div class="ptr-cell" style="color:#ff9ecf;">←</div>
+    <span class="ptr-spacer">→</span>
+    <div class="ptr-cell" style="color:#ff9ecf;">reverse</div>
+    <span class="ptr-spacer">→</span>
+    <div class="ptr-cell" style="color:#ff9ecf;">→</div>
+    <span class="ptr-spacer">→</span>
+    <div class="ptr-cell"></div>
   </div>
 
   <hr class="divider">
@@ -331,8 +384,18 @@
       <div class="node dim">5</div>
       <span class="null-node">→ null</span>
     </div>
-    <div class="ptr-label">
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#7fd4ff;">beforeLeft↑</span>
+    <div class="ptr-row">
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell" style="color:#7fd4ff;">↑bL</div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
     </div>
   </div>
 
