@@ -28,8 +28,8 @@
   .reset-btn { font-size: 12px; color: #888; background: transparent; border: 1px solid #333; border-radius: 4px; padding: 3px 10px; cursor: pointer; transition: all 0.2s; }
   .reset-btn:hover { color: #ff9ecf; border-color: #ff9ecf; }
   .CodeMirror { flex: 1; height: auto !important; font-size: 14px; line-height: 1.5; font-family: 'SF Mono','Fira Code',Consolas,monospace; }
-  .run-bar { background: #1e1e1e; padding: 10px 16px; border-top: 1px solid #333; flex-shrink: 0; }
-  .run-btn { width: 100%; padding: 12px; font-size: 15px; font-weight: 700; color: #121212; background: #90ee90; border: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+  .run-bar { display: flex; gap: 10px; background: #1e1e1e; padding: 10px 16px; border-top: 1px solid #333; flex-shrink: 0; }
+  .run-btn { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; color: #121212; background: #90ee90; border: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
   .run-btn:hover { background: #a8f4a8; }
   .run-btn:active { transform: scale(0.98); }
   .run-btn.running { background: #ffe066; }
@@ -54,6 +54,18 @@
   .hint-section summary:hover { opacity: 1; }
   .hint-section .hints { font-size: 12px; color: #888; line-height: 1.8; margin-top: 6px; padding-left: 8px; border-left: 2px solid #333; }
   .hint-section .hints strong { color: #ffe066; }
+  .run-code-btn { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; color: #121212; background: #7fd4ff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+  .run-code-btn:hover { background: #a0e0ff; }
+  .run-code-btn:active { transform: scale(0.98); }
+  .console-panel { background: #0d0d0d; border-top: 1px solid #333; max-height: 45vh; overflow-y: auto; flex-shrink: 0; }
+  .console-panel.hidden { display: none; }
+  .console-header { padding: 8px 16px; font-size: 12px; font-weight: 600; color: #888; background: #1e1e1e; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1; }
+  .console-header button { background: none; border: none; color: #666; font-size: 16px; cursor: pointer; padding: 0 4px; }
+  .console-header button:hover { color: #fff; }
+  .console-line { padding: 4px 16px; font-size: 12px; font-family: 'SF Mono','Fira Code',Consolas,monospace; color: #e0e0e0; border-bottom: 1px solid #1a1a1a; white-space: pre-wrap; word-break: break-all; }
+  .console-line.error { color: #ff6b6b; }
+  .console-line.warn { color: #ffe066; }
+  .console-line.dim { color: #555; font-style: italic; }
 </style>
 </head>
 <body>
@@ -95,6 +107,7 @@
 </div>
 
 <div class="run-bar">
+  <button class="run-code-btn" onclick="runCode()">Run Code</button>
   <button class="run-btn" onclick="runTests()" id="run-btn">Run Tests</button>
 </div>
 
@@ -105,6 +118,14 @@
   </div>
   <div id="results"></div>
 </div>
+<div class="console-panel hidden" id="console-panel">
+  <div class="console-header">
+    <span>Output</span>
+    <button onclick="document.getElementById('console-panel').classList.add('hidden')">&times;</button>
+  </div>
+  <div id="console-output"></div>
+</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
@@ -140,6 +161,7 @@ function resetCode() {
   cm.setValue(STARTER_CODE);
   localStorage.setItem(STORAGE_KEY, STARTER_CODE);
   document.getElementById('results-panel').classList.add('hidden');
+  document.getElementById('console-panel').classList.add('hidden');
 }
 
 const TEST_CASES = [{name:"[1,2,3,4,5] k=2 -> [2,1,4,3,5]",run:function(fn){const r=listToArray(fn(arrayToList([1,2,3,4,5]),2));return{ok:arrEq(r,[2,1,4,3,5]),detail:'Expected [2,1,4,3,5] got ['+r+']'};}},
@@ -200,6 +222,56 @@ function runTests() {
     btn.classList.add(passed === TEST_CASES.length ? 'passed' : 'failed');
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 80);
+}
+
+function formatValue(v) {
+  if (v === null) return 'null';
+  if (v === undefined) return 'undefined';
+  if (typeof v === 'object' && v !== null && 'val' in v && 'next' in v) {
+    var arr = [], curr = v, safety = 100;
+    var seen = new Set();
+    while (curr && safety-- > 0) {
+      if (seen.has(curr)) { arr.push(curr.val + '(cycle)'); break; }
+      seen.add(curr);
+      arr.push(curr.val);
+      curr = curr.next;
+    }
+    return arr.join(' -> ') + (curr ? '' : ' -> null');
+  }
+  if (Array.isArray(v)) return JSON.stringify(v);
+  if (typeof v === 'object') { try { return JSON.stringify(v, null, 2); } catch(e) { return String(v); } }
+  return String(v);
+}
+
+function runCode() {
+  var panel = document.getElementById('console-panel');
+  var outputEl = document.getElementById('console-output');
+  panel.classList.remove('hidden');
+  outputEl.innerHTML = '';
+  var logs = [];
+  var fakeConsole = {
+    log: function() { logs.push({args: [].slice.call(arguments)}); },
+    warn: function() { logs.push({args: [].slice.call(arguments), type: 'warn'}); },
+    error: function() { logs.push({args: [].slice.call(arguments), type: 'error'}); },
+    info: function() { logs.push({args: [].slice.call(arguments)}); }
+  };
+  try {
+    // Same pattern as runTests() - executes user code from the editor
+    var fn = new Function('console', cm.getValue());
+    fn(fakeConsole);
+  } catch (err) {
+    logs.push({args: ['Error: ' + err.message], type: 'error'});
+  }
+  if (logs.length === 0) {
+    outputEl.innerHTML = '<div class="console-line dim">No output. Use console.log() to see values.</div>';
+  } else {
+    outputEl.innerHTML = logs.map(function(l) {
+      var cls = l.type === 'error' ? ' error' : l.type === 'warn' ? ' warn' : '';
+      var text = l.args.map(formatValue).join(' ');
+      return '<div class="console-line' + cls + '">' + escapeHtml(text) + '</div>';
+    }).join('');
+  }
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function escapeHtml(s) { const el = document.createElement('span'); el.textContent = s; return el.innerHTML; }
