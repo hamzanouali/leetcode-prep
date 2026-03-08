@@ -417,13 +417,13 @@ function arraysEqual(a, b) {
 // --- Test cases ---
 
 const TEST_CASES = [
-  { name: '[1,2,3,4] → [4,3,2,1]', input: [1,2,3,4], expected: [4,3,2,1] },
-  { name: '[1,2] → [2,1]', input: [1,2], expected: [2,1] },
-  { name: '[1] → [1]', input: [1], expected: [1] },
-  { name: '[] → [] (null)', input: [], expected: [] },
-  { name: '[1,2,3,4,5] → [5,4,3,2,1]', input: [1,2,3,4,5], expected: [5,4,3,2,1] },
-  { name: '[1,1,2,2] → [2,2,1,1]', input: [1,1,2,2], expected: [2,2,1,1] },
-  { name: '[-1,0,1] → [1,0,-1]', input: [-1,0,1], expected: [1,0,-1] },
+  {name:'[1,2,3,4] → [4,3,2,1]',run:function(fn){const r=listToArray(fn(arrayToList([1,2,3,4])));const ok=arraysEqual(r,[4,3,2,1]);return{ok:ok,detail:'Expected [4,3,2,1] got ['+r+']'};}},
+  {name:'[1,2] → [2,1]',run:function(fn){const r=listToArray(fn(arrayToList([1,2])));const ok=arraysEqual(r,[2,1]);return{ok:ok,detail:'Expected [2,1] got ['+r+']'};}},
+  {name:'[1] → [1]',run:function(fn){const r=listToArray(fn(arrayToList([1])));const ok=arraysEqual(r,[1]);return{ok:ok,detail:'Expected [1] got ['+r+']'};}},
+  {name:'[] → [] (null)',run:function(fn){const r=listToArray(fn(arrayToList([])));const ok=arraysEqual(r,[]);return{ok:ok,detail:'Expected [] got ['+r+']'};}},
+  {name:'[1,2,3,4,5] → [5,4,3,2,1]',run:function(fn){const r=listToArray(fn(arrayToList([1,2,3,4,5])));const ok=arraysEqual(r,[5,4,3,2,1]);return{ok:ok,detail:'Expected [5,4,3,2,1] got ['+r+']'};}},
+  {name:'[1,1,2,2] → [2,2,1,1]',run:function(fn){const r=listToArray(fn(arrayToList([1,1,2,2])));const ok=arraysEqual(r,[2,2,1,1]);return{ok:ok,detail:'Expected [2,2,1,1] got ['+r+']'};}},
+  {name:'[-1,0,1] → [1,0,-1]',run:function(fn){const r=listToArray(fn(arrayToList([-1,0,1])));const ok=arraysEqual(r,[1,0,-1]);return{ok:ok,detail:'Expected [1,0,-1] got ['+r+']'};}}
 ];
 
 // --- Runner ---
@@ -444,15 +444,10 @@ function runTests() {
 
     let userFn;
     try {
-      // The user code defines reverseList; we extract it
       const userCode = cm.getValue();
       userFn = new Function('ListNode', userCode + '\nreturn reverseList;')(ListNode);
     } catch (err) {
-      resultsEl.innerHTML = `<div class="result-item fail">
-        <span class="icon">✗</span>
-        <div><span class="name">Syntax Error</span>
-        <div class="detail">${escapeHtml(err.message)}</div></div>
-      </div>`;
+      resultsEl.innerHTML = '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">Syntax Error</span><div class="detail">' + escapeHtml(err.message) + '</div></div></div>';
       scoreEl.textContent = '0/' + TEST_CASES.length;
       scoreEl.className = 'score fail';
       btn.textContent = 'Run Tests';
@@ -462,50 +457,28 @@ function runTests() {
     }
 
     let passed = 0;
-
     TEST_CASES.forEach((tc) => {
-      const head = arrayToList(tc.input);
       let result, error;
-
       try {
-        result = userFn(head);
+        result = tc.run(userFn);
       } catch (e) {
         error = e;
       }
-
       if (error) {
-        resultsEl.innerHTML += `<div class="result-item fail">
-          <span class="icon">✗</span>
-          <div><span class="name">${escapeHtml(tc.name)}</span>
-          <div class="detail">Error: ${escapeHtml(error.message)}</div></div>
-        </div>`;
+        resultsEl.innerHTML += '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">' + escapeHtml(tc.name) + '</span><div class="detail">Error: ' + escapeHtml(error.message) + '</div></div></div>';
+      } else if (result.ok) {
+        passed++;
+        resultsEl.innerHTML += '<div class="result-item pass"><span class="icon">&#x2714;</span><div><span class="name">' + escapeHtml(tc.name) + '</span></div></div>';
       } else {
-        const got = listToArray(result);
-        const ok = arraysEqual(got, tc.expected);
-        if (ok) {
-          passed++;
-          resultsEl.innerHTML += `<div class="result-item pass">
-            <span class="icon">✓</span>
-            <div><span class="name">${escapeHtml(tc.name)}</span></div>
-          </div>`;
-        } else {
-          resultsEl.innerHTML += `<div class="result-item fail">
-            <span class="icon">✗</span>
-            <div><span class="name">${escapeHtml(tc.name)}</span>
-            <div class="detail">Expected [${tc.expected}] got [${got}]</div></div>
-          </div>`;
-        }
+        resultsEl.innerHTML += '<div class="result-item fail"><span class="icon">&#x2718;</span><div><span class="name">' + escapeHtml(tc.name) + '</span><div class="detail">' + escapeHtml(result.detail) + '</div></div></div>';
       }
     });
 
     scoreEl.textContent = passed + '/' + TEST_CASES.length;
     scoreEl.className = 'score ' + (passed === TEST_CASES.length ? 'pass' : 'fail');
-
     btn.textContent = passed === TEST_CASES.length ? 'All Passed!' : passed + '/' + TEST_CASES.length + ' — Run Tests';
     btn.classList.remove('running');
     btn.classList.add(passed === TEST_CASES.length ? 'passed' : 'failed');
-
-    // Scroll to results on mobile
     panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 80);
 }
@@ -534,29 +507,62 @@ function runCode() {
   var outputEl = document.getElementById('console-output');
   panel.classList.remove('hidden');
   outputEl.innerHTML = '';
-  var logs = [];
+
+  var allLogs = [];
+  var origConsole = window.console;
   var fakeConsole = {
-    log: function() { logs.push({args: [].slice.call(arguments)}); },
-    warn: function() { logs.push({args: [].slice.call(arguments), type: 'warn'}); },
-    error: function() { logs.push({args: [].slice.call(arguments), type: 'error'}); },
-    info: function() { logs.push({args: [].slice.call(arguments)}); }
+    log: function() { allLogs.push({args: [].slice.call(arguments)}); },
+    warn: function() { allLogs.push({args: [].slice.call(arguments), type: 'warn'}); },
+    error: function() { allLogs.push({args: [].slice.call(arguments), type: 'error'}); },
+    info: function() { allLogs.push({args: [].slice.call(arguments)}); }
   };
+  window.console = fakeConsole;
+
+  var userFn;
   try {
-    // Same pattern as runTests() - executes user code from the editor
-    var fn = new Function('console', cm.getValue());
-    fn(fakeConsole);
+    var userCode = cm.getValue();
+    userFn = new Function('ListNode', userCode + '\nreturn reverseList;')(ListNode);
   } catch (err) {
-    logs.push({args: ['Error: ' + err.message], type: 'error'});
+    window.console = origConsole;
+    outputEl.innerHTML = '<div class="console-line error">' + escapeHtml('Syntax Error: ' + err.message) + '</div>';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
   }
-  if (logs.length === 0) {
-    outputEl.innerHTML = '<div class="console-line dim">No output. Use console.log() to see values.</div>';
-  } else {
-    outputEl.innerHTML = logs.map(function(l) {
+
+  var html = '';
+  if (allLogs.length > 0) {
+    allLogs.forEach(function(l) {
       var cls = l.type === 'error' ? ' error' : l.type === 'warn' ? ' warn' : '';
-      var text = l.args.map(formatValue).join(' ');
-      return '<div class="console-line' + cls + '">' + escapeHtml(text) + '</div>';
-    }).join('');
+      html += '<div class="console-line' + cls + '">' + escapeHtml(l.args.map(formatValue).join(' ')) + '</div>';
+    });
+    html += '<div class="console-line" style="border-top:1px solid #333;height:1px;padding:0;"></div>';
+    allLogs = [];
   }
+
+  TEST_CASES.forEach(function(tc, i) {
+    allLogs = [];
+    var result, error;
+    try {
+      result = tc.run(userFn);
+    } catch (e) {
+      error = e;
+    }
+
+    html += '<div class="console-line" style="color:#7fd4ff;border-bottom:none;padding-bottom:0;">' + escapeHtml(tc.name) + '</div>';
+    if (error) {
+      html += '<div class="console-line error" style="padding-top:2px;">' + escapeHtml('Error: ' + error.message) + '</div>';
+    } else {
+      html += '<div class="console-line" style="padding-top:2px;color:' + (result.ok ? '#90ee90' : '#ff6b6b') + ';">' + escapeHtml(result.detail) + '</div>';
+    }
+    if (allLogs.length > 0) {
+      allLogs.forEach(function(l) {
+        var cls = l.type === 'error' ? ' error' : l.type === 'warn' ? ' warn' : '';
+        html += '<div class="console-line" style="padding-top:0;padding-bottom:0;border:none;color:#888;">' + escapeHtml('  > ' + l.args.map(formatValue).join(' ')) + '</div>';
+      });
+    }
+  });
+  window.console = origConsole;
+  outputEl.innerHTML = html;
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 

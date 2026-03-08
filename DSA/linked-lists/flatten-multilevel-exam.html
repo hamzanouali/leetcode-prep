@@ -254,29 +254,62 @@ function runCode() {
   var outputEl = document.getElementById('console-output');
   panel.classList.remove('hidden');
   outputEl.innerHTML = '';
-  var logs = [];
+
+  var allLogs = [];
+  var origConsole = window.console;
   var fakeConsole = {
-    log: function() { logs.push({args: [].slice.call(arguments)}); },
-    warn: function() { logs.push({args: [].slice.call(arguments), type: 'warn'}); },
-    error: function() { logs.push({args: [].slice.call(arguments), type: 'error'}); },
-    info: function() { logs.push({args: [].slice.call(arguments)}); }
+    log: function() { allLogs.push({args: [].slice.call(arguments)}); },
+    warn: function() { allLogs.push({args: [].slice.call(arguments), type: 'warn'}); },
+    error: function() { allLogs.push({args: [].slice.call(arguments), type: 'error'}); },
+    info: function() { allLogs.push({args: [].slice.call(arguments)}); }
   };
+  window.console = fakeConsole;
+
+  var userFn;
   try {
-    // Same pattern as runTests() - executes user code from the editor
-    var fn = new Function('console', cm.getValue());
-    fn(fakeConsole);
+    var userCode = cm.getValue();
+    userFn = new Function('Node', userCode + '\nreturn flatten;')(Node);
   } catch (err) {
-    logs.push({args: ['Error: ' + err.message], type: 'error'});
+    window.console = origConsole;
+    outputEl.innerHTML = '<div class="console-line error">' + escapeHtml('Syntax Error: ' + err.message) + '</div>';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
   }
-  if (logs.length === 0) {
-    outputEl.innerHTML = '<div class="console-line dim">No output. Use console.log() to see values.</div>';
-  } else {
-    outputEl.innerHTML = logs.map(function(l) {
+
+  var html = '';
+  if (allLogs.length > 0) {
+    allLogs.forEach(function(l) {
       var cls = l.type === 'error' ? ' error' : l.type === 'warn' ? ' warn' : '';
-      var text = l.args.map(formatValue).join(' ');
-      return '<div class="console-line' + cls + '">' + escapeHtml(text) + '</div>';
-    }).join('');
+      html += '<div class="console-line' + cls + '">' + escapeHtml(l.args.map(formatValue).join(' ')) + '</div>';
+    });
+    html += '<div class="console-line" style="border-top:1px solid #333;height:1px;padding:0;"></div>';
+    allLogs = [];
   }
+
+  TEST_CASES.forEach(function(tc, i) {
+    allLogs = [];
+    var result, error;
+    try {
+      result = tc.run(userFn);
+    } catch (e) {
+      error = e;
+    }
+
+    html += '<div class="console-line" style="color:#7fd4ff;border-bottom:none;padding-bottom:0;">' + escapeHtml(tc.name) + '</div>';
+    if (error) {
+      html += '<div class="console-line error" style="padding-top:2px;">' + escapeHtml('Error: ' + error.message) + '</div>';
+    } else {
+      html += '<div class="console-line" style="padding-top:2px;color:' + (result.ok ? '#90ee90' : '#ff6b6b') + ';">' + escapeHtml(result.detail) + '</div>';
+    }
+    if (allLogs.length > 0) {
+      allLogs.forEach(function(l) {
+        var cls = l.type === 'error' ? ' error' : l.type === 'warn' ? ' warn' : '';
+        html += '<div class="console-line" style="padding-top:0;padding-bottom:0;border:none;color:#888;">' + escapeHtml('  > ' + l.args.map(formatValue).join(' ')) + '</div>';
+      });
+    }
+  });
+  window.console = origConsole;
+  outputEl.innerHTML = html;
   panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
