@@ -98,6 +98,7 @@
   .chalk .green { color: #90ee90; }
   .chalk .cyan { color: #7fd4ff; }
   .chalk .orange { color: #ffb347; }
+  .chalk .red { color: #ff6b6b; }
 
   .ll-row {
     display: flex;
@@ -248,13 +249,6 @@
     background: rgba(255,224,102,0.08);
   }
 
-  .ptr-label {
-    font-family: 'Gloria Hallelujah', cursive;
-    font-size: clamp(8px, 1.8vw, 10px);
-    text-align: center;
-    margin-top: -1px;
-  }
-
   .ptr-row {
     display: flex;
     align-items: flex-start;
@@ -298,27 +292,40 @@
     background: rgba(0,0,0,0.25);
   }
 
-  .four-pointers {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
+  .analogy-box {
+    background: rgba(127,212,255,0.06);
+    border: 1px solid rgba(127,212,255,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
     margin: 4px 0;
   }
-  .ptr-card {
+
+  .invariant-box {
+    background: rgba(255,158,207,0.06);
+    border: 1px solid rgba(255,158,207,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .qa-box {
     background: rgba(0,0,0,0.18);
-    border-radius: 6px;
-    padding: 5px 8px;
-    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
   }
-  .ptr-card .name {
-    font-family: 'Gloria Hallelujah', cursive;
-    font-size: clamp(10px, 2.2vw, 12px);
-    font-weight: 700;
+  .qa-q {
+    font-family: 'Patrick Hand', cursive;
+    color: #ffb347;
+    font-size: clamp(12px, 2.7vw, 15px);
   }
-  .ptr-card .desc {
+  .qa-a {
     font-family: 'Caveat', cursive;
-    font-size: clamp(10px, 2.2vw, 12px);
-    color: rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.85);
+    font-size: clamp(11px, 2.5vw, 14px);
+    margin-top: 3px;
+    line-height: 1.4;
   }
 
   .exam-btn {
@@ -351,203 +358,194 @@
 
   <div class="nav-tabs">
     <a href="reverse-between.html">v1: Insert at Front</a>
-    <a class="active" href="reverse-between-v2.html">v2: Classic Reversal</a>
+    <a class="active" href="reverse-between-v2.html">v2: Deep Intuition</a>
     <a href="reverse-between-v3.html">v3: Frame-by-Frame</a>
   </div>
 
   <div class="title">Reverse Between L and R</div>
-  <div class="subtitle">LC #92 | v2: The "Classic Reversal + Reconnect" Approach</div>
+  <div class="subtitle">LC #92 | v2: Why the "Insert at Front" Trick Works</div>
 
-  <!-- ═══════ PROBLEM ═══════ -->
-  <div class="section-label">🔴 The Problem</div>
+  <!-- ═══════ SAME CODE, DIFFERENT LENS ═══════ -->
+  <div class="section-label">🔴 Same Solution, Deeper Understanding</div>
   <div class="problem-box">
     <div class="chalk">
-      Given a linked list, reverse nodes from position <strong>left</strong> to <strong>right</strong> (1-indexed).<br>
-      Example: left=2, right=4
+      This is the <strong>same code</strong> as v1. If the code confused you, this page explains <span class="pink">why</span> each piece exists and <span class="cyan">what would break</span> without it.
     </div>
-  </div>
-
-  <div class="ll-row">
-    <div class="node dim">1</div>
-    <span class="arrow">→</span>
-    <div class="node rev">2</div>
-    <span class="arrow">→</span>
-    <div class="node rev">3</div>
-    <span class="arrow">→</span>
-    <div class="node rev">4</div>
-    <span class="arrow">→</span>
-    <div class="node dim">5</div>
-    <span class="null-node">→ null</span>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══════ BIG IDEA ═══════ -->
-  <div class="section-label">💡 Big Idea</div>
-  <div class="solution-box">
+  <!-- ═══════ ANALOGY ═══════ -->
+  <div class="section-label">🎯 The Real-Life Analogy</div>
+  <div class="analogy-box">
     <div class="chalk">
-      Think of it as <span class="pink">3 separate zones</span>:<br>
-      <strong>Zone A</strong> — untouched prefix (before left)<br>
-      <strong>Zone B</strong> — the sub-list to reverse<br>
-      <strong>Zone C</strong> — untouched suffix (after right)<br><br>
-      We just <span class="green">reverse Zone B</span> exactly like a normal "reverse linked list", then <strong>stitch the 3 zones</strong> back together.
-    </div>
-  </div>
-
-  <div class="step-box">
-    <div class="chalk" style="text-align:center; font-size:clamp(11px,2.5vw,13px);">
-      <span style="color:rgba(255,255,255,0.4);">[Zone A]</span> → <span class="pink">[Zone B — reverse me]</span> → <span style="color:rgba(255,255,255,0.4);">[Zone C]</span>
+      Imagine a <strong>deck of cards</strong> in a row on a table: A B C D E.<br>
+      You want to reverse cards at positions 2-4 (B C D).<br><br>
+      <span class="orange">The trick:</span> put your finger on B. Now repeatedly take the card <em>right after</em> your finger and place it at the <span class="pink">front of the group</span>:<br><br>
+      <strong>Start:</strong> A <span class="cyan">[B</span> C D] E<br>
+      <strong>Move C to front:</strong> A <span class="cyan">[C B</span> D] E<br>
+      <strong>Move D to front:</strong> A <span class="cyan">[D C B</span>] E<br><br>
+      <span class="green">Your finger (B) never moved.</span> It just slid to the end naturally as cards were inserted before it.
     </div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══════ 4 POINTERS ═══════ -->
-  <div class="section-label">🧩 The 4 Pointers You Need</div>
-  <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
-    Save 4 pointers <strong>before</strong> reversing so you can reconnect after:
-  </div>
-  <div class="four-pointers">
-    <div class="ptr-card">
-      <div class="name" style="color:#7fd4ff;">beforeLeft</div>
-      <div class="desc">last node of Zone A</div>
+  <!-- ═══════ THE TWO ANCHORS ═══════ -->
+  <div class="section-label">⚓ The Two Anchors</div>
+  <div class="step-box">
+    <div class="chalk">
+      The entire algorithm relies on <strong>two pointers that never move</strong>:
     </div>
-    <div class="ptr-card">
-      <div class="name" style="color:#ff9ecf;">leftNode</div>
-      <div class="desc">first node of Zone B</div>
+    <div class="ll-row">
+      <div class="node dummy">D</div>
+      <span class="arrow">→</span>
+      <div class="node head">1</div>
+      <span class="arrow">→</span>
+      <div class="node curr">2</div>
+      <span class="arrow">→</span>
+      <div class="node rev">3</div>
+      <span class="arrow">→</span>
+      <div class="node rev">4</div>
+      <span class="arrow">→</span>
+      <div class="node dim">5</div>
+      <span class="null-node">→ null</span>
     </div>
-    <div class="ptr-card">
-      <div class="name" style="color:#ff9ecf;">rightNode</div>
-      <div class="desc">last node of Zone B</div>
+    <div class="ptr-row">
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell" style="color:#7fd4ff;">↑bL</div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell" style="color:#ffe066;">↑curr</div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
+      <span class="ptr-spacer">→</span>
+      <div class="ptr-cell"></div>
     </div>
-    <div class="ptr-card">
-      <div class="name" style="color:#7fd4ff;">afterRight</div>
-      <div class="desc">first node of Zone C</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px); margin-top:5px;">
+      <span class="cyan">beforeLeft (bL)</span> = the gatekeeper. It always points to the <em>current</em> front of the reversed section. Every new node gets inserted right after it.<br><br>
+      <span class="orange">curr</span> = the original first node of the section. It <span class="green">never moves in memory</span> — but it sinks to the back as nodes are placed ahead of it. At the end, it's the <em>last</em> node of the reversed section.
     </div>
-  </div>
-
-  <div class="ll-row">
-    <div class="node dummy">D</div>
-    <span class="arrow">→</span>
-    <div class="node head">1</div>
-    <span class="arrow">→</span>
-    <div class="node rev">2</div>
-    <span class="arrow">→</span>
-    <div class="node rev">3</div>
-    <span class="arrow">→</span>
-    <div class="node rev">4</div>
-    <span class="arrow">→</span>
-    <div class="node dim">5</div>
-    <span class="null-node">→ null</span>
-  </div>
-  <div class="ptr-row">
-    <div class="ptr-cell"></div>
-    <span class="ptr-spacer">→</span>
-    <div class="ptr-cell" style="color:#7fd4ff;">↑bL</div>
-    <span class="ptr-spacer">→</span>
-    <div class="ptr-cell" style="color:#ff9ecf;">↑lN</div>
-    <span class="ptr-spacer">→</span>
-    <div class="ptr-cell"></div>
-    <span class="ptr-spacer">→</span>
-    <div class="ptr-cell" style="color:#ff9ecf;">↑rN</div>
-    <span class="ptr-spacer">→</span>
-    <div class="ptr-cell" style="color:#7fd4ff;">↑aR</div>
   </div>
 
   <hr class="divider">
 
-  <!-- ═══════ WALKTHROUGH ═══════ -->
-  <div class="section-label">📸 Walkthrough</div>
+  <!-- ═══════ LINE BY LINE WHY ═══════ -->
+  <div class="section-label">🧠 The 3 Lines — What & Why</div>
 
   <div class="step-box">
-    <div class="step-title">Step 1: Navigate to find the 4 pointers</div>
+    <div class="step-title">Line 1: curr.next = nodeToMove.next</div>
     <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      Walk (left - 1) steps → <span class="cyan">beforeLeft</span> = node 1<br>
-      <span class="pink">leftNode</span> = beforeLeft.next = node 2<br>
-      Continue to position right → <span class="pink">rightNode</span> = node 4<br>
-      <span class="cyan">afterRight</span> = rightNode.next = node 5
+      <span class="cyan">What:</span> Removes nodeToMove from its current position by skipping over it.<br>
+      <span class="orange">Why:</span> You're about to relocate this node. If you don't detach it first, you'd create a cycle — nodeToMove would be in two places at once.<br>
+      <span class="pink">Bonus:</span> This also connects curr to whatever comes after nodeToMove, keeping the rest of the list intact.
     </div>
   </div>
 
   <div class="step-box">
-    <div class="step-title">Step 2: Standard reverse on Zone B</div>
+    <div class="step-title">Line 2: nodeToMove.next = beforeLeft.next</div>
     <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      Reverse nodes 2→3→4 using the classic <span class="pink">prev/curr/next</span> technique you already know:
-    </div>
-    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.5); margin-top:4px;">
-      prev=null, curr=2: next=3, 2→null, prev=2, curr=3<br>
-      prev=2, curr=3: next=4, 3→2, prev=3, curr=4<br>
-      prev=3, curr=4: next=5, 4→3, prev=4, curr=5 ✓<br>
-      <span class="green">Zone B reversed: 4 → 3 → 2</span>
+      <span class="cyan">What:</span> Points nodeToMove to whatever is currently at the front of the reversed section.<br>
+      <span class="orange">Why:</span> This is how nodeToMove "joins" the reversed section. It gets placed <em>before</em> everything already reversed.<br>
+      <span class="pink">Key detail:</span> beforeLeft.next is the current front — NOT curr. On the first iteration beforeLeft.next happens to be curr, but on later iterations it's a previously moved node.
     </div>
   </div>
 
   <div class="step-box">
-    <div class="step-title">Step 3: Reconnect (just 2 links!)</div>
+    <div class="step-title">Line 3: beforeLeft.next = nodeToMove</div>
     <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      <strong>1.</strong> <span class="cyan">beforeLeft.next</span> = rightNode <span style="color:rgba(255,255,255,0.4);">(Zone A → reversed head)</span><br>
-      <strong>2.</strong> <span class="pink">leftNode.next</span> = afterRight <span style="color:rgba(255,255,255,0.4);">(reversed tail → Zone C)</span>
+      <span class="cyan">What:</span> Makes nodeToMove the new front of the reversed section.<br>
+      <span class="orange">Why:</span> beforeLeft is the gatekeeper — the entry point to the reversed zone. Updating it completes the insertion.<br>
+      <span class="pink">Why last?</span> If you did this before Line 2, you'd lose the reference to the old front. The order matters!
     </div>
   </div>
 
-  <!-- ═══════ RESULT ═══════ -->
-  <div class="section-label">✅ Result</div>
-  <div class="ll-row">
-    <div class="node dim">1</div>
-    <span class="arrow rev">→</span>
-    <div class="node active">4</div>
-    <span class="arrow rev">→</span>
-    <div class="node active">3</div>
-    <span class="arrow rev">→</span>
-    <div class="node active">2</div>
-    <span class="arrow rev">→</span>
-    <div class="node dim">5</div>
-    <span class="null-node">→ null</span>
+  <hr class="divider">
+
+  <!-- ═══════ ORDER MATTERS ═══════ -->
+  <div class="section-label">⚠️ Why The Order Matters</div>
+  <div class="invariant-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Each line depends on values that the <em>next</em> line is about to overwrite:<br><br>
+      <strong>Line 1</strong> reads <span class="cyan">curr.next</span> (= nodeToMove) before anything changes<br>
+      <strong>Line 2</strong> reads <span class="cyan">beforeLeft.next</span> (= old front) before Line 3 overwrites it<br>
+      <strong>Line 3</strong> overwrites <span class="cyan">beforeLeft.next</span> — safe now, Line 2 already used it<br><br>
+      <span class="red">Swap Line 2 and Line 3?</span> nodeToMove.next would point to <em>itself</em> (infinite loop!).<br>
+      <span class="red">Swap Line 1 and Line 2?</span> nodeToMove.next gets overwritten before you detach — you lose the tail of the list.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ Q&A ═══════ -->
+  <div class="section-label">❓ Questions You Probably Have</div>
+
+  <div class="qa-box">
+    <div class="qa-q">Q: Why doesn't curr move forward each iteration?</div>
+    <div class="qa-a">Because curr isn't walking through the list — it's an <strong>anchor</strong>. The node right after curr keeps changing (that's nodeToMove), so curr naturally "sees" a new node each time without moving itself. Think of it as standing still while people in line jump over you.</div>
+  </div>
+
+  <div class="qa-box">
+    <div class="qa-q">Q: How does this avoid the "reconnection" step that other solutions need?</div>
+    <div class="qa-a">Other approaches reverse the sub-list and <em>then</em> stitch it back. This approach <span class="green">never breaks the connection</span> between Zone A and Zone B, or between Zone B and Zone C. Every iteration, the list is valid from start to end. beforeLeft always points into the reversed section, and curr always points to what comes after it. The zones are always connected — they just grow and shrink.</div>
+  </div>
+
+  <div class="qa-box">
+    <div class="qa-q">Q: Why (right - left) iterations, not (right - left + 1)?</div>
+    <div class="qa-a">You have <strong>(right - left + 1)</strong> nodes in the section, but the first one (curr) is already in place — it just needs to end up last. You only need to move the other <strong>(right - left)</strong> nodes in front of it. Each iteration moves exactly one node.</div>
+  </div>
+
+  <div class="qa-box">
+    <div class="qa-q">Q: What if left = 1? There's no "beforeLeft" node!</div>
+    <div class="qa-a">That's exactly why we use a <span class="orange">dummy node</span>. It becomes beforeLeft when left=1. Without it, we'd need special-case code for when the reversal starts at the head.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ THE INVARIANT ═══════ -->
+  <div class="section-label">🔒 The Invariant (After Every Iteration)</div>
+  <div class="solution-box">
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      After each loop iteration, these are <strong>always true</strong>:<br><br>
+      <strong>1.</strong> <span class="cyan">beforeLeft.next</span> → points to the front of the reversed portion so far<br>
+      <strong>2.</strong> <span class="orange">curr</span> → still the same node (node 2), now at the tail of the reversed portion<br>
+      <strong>3.</strong> <span class="orange">curr.next</span> → points to the next node that will be moved (or to Zone C when done)<br>
+      <strong>4.</strong> The full list is <span class="green">always connected and valid</span> — no dangling pointers at any point
+    </div>
+  </div>
+
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.5); text-align:center;">
+    Check this invariant after each frame in v3 — you'll see it holds every time.
   </div>
 
   <hr class="divider">
 
   <!-- ═══════ CODE ═══════ -->
-  <div class="section-label">💻 Code (JavaScript)</div>
+  <div class="section-label">💻 The Code (annotated)</div>
   <div class="code-block"><span class="kw">function</span> <span class="fn">reverseBetween</span>(head, left, right) {
-  <span class="kw">const</span> dummy = { next: head };
-  <span class="kw">let</span> beforeLeft = dummy;
+  <span class="kw">const</span> dummy = { next: head }; <span class="cm">// fake node before head</span>
+  <span class="kw">let</span> beforeLeft = dummy;       <span class="cm">// anchor #1</span>
 
-  <span class="cm">// Step 1: find beforeLeft</span>
+  <span class="cm">// Navigate: stop right before position 'left'</span>
   <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i < left - <span class="num">1</span>; i++) {
     beforeLeft = beforeLeft.next;
   }
-  <span class="kw">let</span> leftNode = beforeLeft.next;
 
-  <span class="cm">// Step 2: classic reverse from leftNode</span>
-  <span class="cm">//         for (right - left) steps</span>
-  <span class="kw">let</span> prev = <span class="kw">null</span>, curr = leftNode;
-  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i <= right - left; i++) {
-    <span class="kw">const</span> next = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = next;
+  <span class="kw">let</span> curr = beforeLeft.next;   <span class="cm">// anchor #2 (never moves!)</span>
+
+  <span class="cm">// Each iteration: grab node after curr,</span>
+  <span class="cm">// detach it, insert it at the front</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i < right - left; i++) {
+    <span class="kw">const</span> nodeToMove = curr.next; <span class="cm">// who's being relocated</span>
+    curr.next = nodeToMove.next;  <span class="cm">// detach (skip over)</span>
+    nodeToMove.next = beforeLeft.next; <span class="cm">// point to old front</span>
+    beforeLeft.next = nodeToMove; <span class="cm">// become new front</span>
   }
-  <span class="cm">// now prev = rightNode, curr = afterRight</span>
-
-  <span class="cm">// Step 3: reconnect</span>
-  beforeLeft.next = prev;    <span class="cm">// Zone A → reversed head</span>
-  leftNode.next = curr;      <span class="cm">// reversed tail → Zone C</span>
 
   <span class="kw">return</span> dummy.next;
 }</div>
-
-  <hr class="divider">
-
-  <!-- ═══════ WHY THIS WORKS ═══════ -->
-  <div class="section-label">🔑 Why This Clicks</div>
-  <div class="step-box">
-    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
-      If you already know how to <span class="pink">reverse a full linked list</span>, this is the same thing — just on a <strong>sub-section</strong>.<br><br>
-      The only new part is the <span class="green">reconnection step</span>: stitching Zone A and Zone C back to the reversed chunk.<br><br>
-      <span class="orange">Mental model:</span> cut the sub-list out → reverse it → tape it back in.
-    </div>
-  </div>
 
   <hr class="divider">
 
@@ -559,11 +557,12 @@
   <hr class="divider">
 
   <div class="insight">
-    <div class="insight-label">💡 Key Insights</div>
+    <div class="insight-label">💡 Summary</div>
     <div class="chalk" style="font-size:clamp(11px,2.4vw,13px);">
-      <strong>1.</strong> This is literally "reverse linked list" + "save 4 pointers" + "2 reconnection lines".<br>
-      <strong>2.</strong> After the reversal loop, <span class="cyan">prev</span> = new head of reversed section, <span class="cyan">curr</span> = first node after it. That's all you need to reconnect.<br>
-      <strong>3.</strong> The dummy node handles the edge case where left=1 (reversing from the very start).
+      <strong>Two anchors</strong> (beforeLeft + curr) that never move.<br>
+      <strong>Three lines</strong> (detach, point to front, become front) that repeat.<br>
+      <strong>One invariant</strong> — the list is always valid after every iteration.<br><br>
+      If this still feels fuzzy, go to <span class="cyan">v3 (Frame-by-Frame)</span> and trace the exact pointer values. Come back here after — it'll click.
     </div>
   </div>
 
