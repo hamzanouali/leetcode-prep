@@ -596,23 +596,24 @@
       padding: 12px 10px 10px;
       margin: 4px 0;
     }
+
+    /* ── Stage (node visualization) ── */
     .player-stage {
       position: relative;
-      height: 80px;
-      margin: 0 auto 8px;
+      height: 72px;
+      margin: 0 auto 4px;
       max-width: 380px;
     }
-    /* ── Nodes ── */
     .an {
       position: absolute;
       width: 38px; height: 34px;
-      border: 2px solid rgba(255,255,255,0.55);
+      border: 2px solid rgba(255,255,255,0.5);
       border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Caveat', cursive;
       font-size: 17px; font-weight: 700;
-      color: rgba(255,255,255,0.8);
-      top: 28px;
+      color: rgba(255,255,255,0.75);
+      top: 24px;
       transition: all 0.6s cubic-bezier(.4,0,.2,1);
       z-index: 2;
     }
@@ -633,80 +634,113 @@
     .an-null {
       position: absolute;
       font-family: 'Caveat', cursive;
-      font-size: 13px;
-      color: rgba(255,255,255,0.25);
-      top: 36px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      top: 32px;
       transition: all 0.6s cubic-bezier(.4,0,.2,1);
       z-index: 1;
     }
-    /* ── Arrows ── */
     .aa {
       position: absolute;
       font-size: 15px;
-      color: rgba(255,255,255,0.35);
-      top: 34px;
+      color: rgba(255,255,255,0.3);
+      top: 30px;
       transition: all 0.6s cubic-bezier(.4,0,.2,1);
-      z-index: 1;
-      user-select: none;
+      z-index: 1; user-select: none;
     }
     .aa.flipped { color: #90ee90; }
-    .aa.flipping {
-      color: #ff9ecf;
-      text-shadow: 0 0 8px rgba(255,158,207,0.4);
-    }
-    /* ── Pointer labels ── */
+    .aa.flipping { color: #ff9ecf; text-shadow: 0 0 8px rgba(255,158,207,0.4); }
     .ap {
       position: absolute;
       font-family: 'Gloria Hallelujah', cursive;
-      font-size: 9.5px;
-      top: 4px;
-      text-align: center;
-      width: 38px;
+      font-size: 9px; top: 2px;
+      text-align: center; width: 38px;
       transition: all 0.6s cubic-bezier(.4,0,.2,1);
-      z-index: 3;
+      z-index: 3; white-space: nowrap;
     }
-    /* ── Narration ── */
-    .player-nar {
+
+    /* ── Variable Watch Table ── */
+    .watch-wrap {
+      margin: 6px 0 8px;
+      overflow: hidden;
+    }
+    .watch-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
       font-family: 'Caveat', cursive;
-      font-size: clamp(12px, 2.8vw, 15px);
-      color: rgba(255,255,255,0.85);
-      text-align: center;
-      min-height: 1.5em;
-      line-height: 1.4;
-      margin-bottom: 8px;
-      transition: opacity 0.3s;
+      font-size: clamp(11px, 2.5vw, 14px);
+      color: rgba(255,255,255,0.8);
     }
-    .player-nar strong { color: #ffe066; }
+    .watch-table thead th {
+      font-family: 'Patrick Hand', cursive;
+      font-size: clamp(10px, 2.2vw, 12px);
+      color: rgba(255,255,255,0.5);
+      font-weight: 400;
+      padding: 3px 6px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+    .watch-table thead th.col-iter { color: rgba(255,255,255,0.4); }
+    .watch-table thead th.col-prev { color: #ff9ecf; }
+    .watch-table thead th.col-curr { color: #7fd4ff; }
+    .watch-table thead th.col-next { color: #ffb347; }
+    .watch-table thead th.col-act { color: rgba(255,255,255,0.4); }
+    .watch-table tbody td {
+      padding: 3px 6px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: middle;
+    }
+    .watch-table .wr {
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .watch-table .wr.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .watch-table .wr.active-row td {
+      background: rgba(127,212,255,0.06);
+    }
+    .watch-table .wr.done-row td {
+      color: rgba(255,255,255,0.45);
+      background: none;
+    }
+    .watch-table .wr td.val-prev { color: #ff9ecf; }
+    .watch-table .wr td.val-curr { color: #7fd4ff; }
+    .watch-table .wr td.val-next { color: #ffb347; }
+    .watch-table .wr td.val-act { color: #90ee90; font-size: clamp(10px, 2.2vw, 12px); }
+    .watch-table .wr.final-row td { color: #90ee90; }
+    .watch-table .wr.final-row td.val-act { color: #ffe066; }
+
     /* ── Controls ── */
     .pc {
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .pc button {
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 20px;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.6);
       font-size: 14px;
-      width: 34px; height: 34px;
+      width: 32px; height: 32px;
       cursor: pointer;
       transition: all 0.2s;
       display: flex; align-items: center; justify-content: center;
     }
     .pc button:hover { background: rgba(255,255,255,0.14); color: #fff; }
     .pc button.play-btn {
-      width: 42px; height: 42px; font-size: 18px;
+      width: 40px; height: 40px; font-size: 17px;
       background: rgba(127,212,255,0.15);
       border-color: rgba(127,212,255,0.3);
       color: #7fd4ff;
     }
     .pc button.play-btn:hover { background: rgba(127,212,255,0.25); }
-    .pc-dots {
-      display: flex; gap: 5px; margin: 0 8px;
-    }
+    .pc-dots { display: flex; gap: 5px; margin: 0 8px; }
     .pc-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
+      width: 7px; height: 7px; border-radius: 50%;
       background: rgba(255,255,255,0.15);
       transition: all 0.3s;
     }
@@ -715,23 +749,68 @@
   </style>
 
   <div class="player">
-    <div class="player-nar" id="pnar">Press play to watch the reversal unfold.</div>
     <div class="player-stage" id="pstage">
-      <!-- Null markers -->
       <span class="an-null" id="nl" style="left:0px">null</span>
       <span class="an-null" id="nr" style="left:310px">&rarr; null</span>
-      <!-- Nodes (persistent — just move them) -->
       <div class="an" id="nd1" style="left:46px">1</div>
       <div class="an" id="nd2" style="left:130px">2</div>
       <div class="an" id="nd3" style="left:214px">3</div>
-      <!-- Arrows between nodes (persistent) -->
       <span class="aa" id="ar1" style="left:88px">&rarr;</span>
       <span class="aa" id="ar2" style="left:172px">&rarr;</span>
       <span class="aa" id="ar3" style="left:256px">&rarr;</span>
-      <!-- Pointer labels -->
       <div class="ap" id="lp" style="left:46px; color:#ff9ecf;">prev</div>
       <div class="ap" id="lc" style="left:46px; color:#7fd4ff;">curr</div>
     </div>
+
+    <div class="watch-wrap">
+      <table class="watch-table">
+        <thead>
+          <tr>
+            <th class="col-iter">#</th>
+            <th class="col-prev">prev</th>
+            <th class="col-curr">curr</th>
+            <th class="col-next">next</th>
+            <th class="col-act">action</th>
+          </tr>
+        </thead>
+        <tbody id="wtbody">
+          <tr class="wr" id="wr0">
+            <td style="color:rgba(255,255,255,0.35);">init</td>
+            <td class="val-prev">null</td>
+            <td class="val-curr">1</td>
+            <td class="val-next">&mdash;</td>
+            <td class="val-act">&mdash;</td>
+          </tr>
+          <tr class="wr" id="wr1">
+            <td>1</td>
+            <td class="val-prev">1</td>
+            <td class="val-curr">2</td>
+            <td class="val-next">2</td>
+            <td class="val-act">1.next &rarr; null</td>
+          </tr>
+          <tr class="wr" id="wr2">
+            <td>2</td>
+            <td class="val-prev">2</td>
+            <td class="val-curr">3</td>
+            <td class="val-next">3</td>
+            <td class="val-act">2.next &rarr; 1</td>
+          </tr>
+          <tr class="wr" id="wr3">
+            <td>3</td>
+            <td class="val-prev">3</td>
+            <td class="val-curr">null</td>
+            <td class="val-next">null</td>
+            <td class="val-act">3.next &rarr; 2</td>
+          </tr>
+          <tr class="wr final-row" id="wr4">
+            <td>&check;</td>
+            <td class="val-prev" colspan="3">return prev = node(3)</td>
+            <td class="val-act">reversed!</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="pc">
       <button id="pbr" title="Reset">&#x23EE;</button>
       <button id="pbb" title="Step back">&#x23EA;</button>
@@ -743,20 +822,31 @@
 
   <script>
   (function(){
-    // Positions: slot x-coords for nodes and labels
-    // null-left=0, node1=46, node2=130, node3=214, null-right=310
     var P = { nl:0, n1:46, n2:130, n3:214, nr:310 };
-    // Arrow positions (between nodes)
     var AP = { a1:88, a2:172, a3:256 };
 
-    // Elements
     var nd1=document.getElementById('nd1'), nd2=document.getElementById('nd2'), nd3=document.getElementById('nd3');
     var ar1=document.getElementById('ar1'), ar2=document.getElementById('ar2'), ar3=document.getElementById('ar3');
     var nl=document.getElementById('nl'), nr=document.getElementById('nr');
     var lp=document.getElementById('lp'), lc=document.getElementById('lc');
-    var nar=document.getElementById('pnar');
+    var rows = [document.getElementById('wr0'),document.getElementById('wr1'),document.getElementById('wr2'),document.getElementById('wr3'),document.getElementById('wr4')];
 
-    // Frame definitions — just describe what changes
+    function showRows(upTo) {
+      for (var i = 0; i < rows.length; i++) {
+        if (i <= upTo) {
+          rows[i].classList.add('visible');
+          rows[i].classList.remove('done-row');
+          rows[i].classList.remove('active-row');
+          if (i === upTo) rows[i].classList.add('active-row');
+          else if (i < upTo) rows[i].classList.add('done-row');
+        } else {
+          rows[i].classList.remove('visible');
+          rows[i].classList.remove('active-row');
+          rows[i].classList.remove('done-row');
+        }
+      }
+    }
+
     var frames = [
       // 0: Initial
       function(){
@@ -770,66 +860,55 @@
         nr.style.left=P.nr+'px'; nr.style.opacity='1';
         lp.textContent='prev'; lp.style.left='0px'; lp.style.color='#ff9ecf'; lp.style.opacity='1';
         lc.textContent='curr'; lc.style.left=P.n1+'px'; lc.style.color='#7fd4ff'; lc.style.opacity='1';
-        nar.textContent='prev = null, curr = node(1). Three arrows point forward.';
+        showRows(0);
       },
-      // 1: Flip arrow 1, node 1 done, pointers shift
+      // 1: Flip arrow 1
       function(){
         ar1.textContent='\u2190'; ar1.className='aa flipping';
         nd1.className='an glow';
-        nar.textContent='\u2776 Process node(1): save next, flip arrow, shift pointers.';
+        showRows(1);
         setTimeout(function(){
           ar1.className='aa flipped';
-          nd1.className='an done';
-          nd2.className='an glow';
-          lp.style.left=P.n1+'px';
-          lc.style.left=P.n2+'px';
-          nar.textContent='Node(1) now points back to null. prev \u2192 node(1), curr \u2192 node(2).';
+          nd1.className='an done'; nd2.className='an glow';
+          lp.style.left=P.n1+'px'; lc.style.left=P.n2+'px';
         }, 600);
       },
-      // 2: Flip arrow 2, node 2 done, pointers shift
+      // 2: Flip arrow 2
       function(){
         ar2.textContent='\u2190'; ar2.className='aa flipping';
         nd2.className='an glow';
-        nar.textContent='\u2777 Process node(2): save next, flip arrow, shift pointers.';
+        showRows(2);
         setTimeout(function(){
           ar2.className='aa flipped';
-          nd2.className='an done';
-          nd3.className='an glow';
-          lp.style.left=P.n2+'px';
-          lc.style.left=P.n3+'px';
-          nar.textContent='Node(2) now points back to node(1). prev \u2192 node(2), curr \u2192 node(3).';
+          nd2.className='an done'; nd3.className='an glow';
+          lp.style.left=P.n2+'px'; lc.style.left=P.n3+'px';
         }, 600);
       },
-      // 3: Flip arrow 3, node 3 done, curr = null
+      // 3: Flip arrow 3
       function(){
         ar3.textContent='\u2190'; ar3.className='aa flipping';
         nd3.className='an glow';
-        nar.textContent='\u2778 Process node(3): save next (null), flip arrow, shift pointers.';
+        showRows(3);
         setTimeout(function(){
           ar3.className='aa flipped';
           nd3.className='an done';
-          lp.style.left=P.n3+'px';
-          lc.style.left=P.nr+'px';
-          nar.textContent='Node(3) points back to node(2). curr = null \u2014 loop ends!';
+          lp.style.left=P.n3+'px'; lc.style.left=P.nr+'px';
         }, 600);
       },
-      // 4: Final — rearrange to show reversed list cleanly
+      // 4: Final
       function(){
-        lp.style.opacity='0';
-        lc.style.opacity='0';
+        lp.style.opacity='0'; lc.style.opacity='0';
         nl.style.opacity='0';
-        nr.style.left=(P.nr)+'px';
-        // Rearrange: 3, 2, 1 left to right
+        nr.style.left=P.nr+'px';
         nd3.style.left=P.n1+'px'; nd3.className='an done-bright';
         nd2.style.left=P.n2+'px'; nd2.className='an done-bright';
         nd1.style.left=P.n3+'px'; nd1.className='an done-bright';
-        // Arrows all point right now (reversed order)
         ar1.textContent='\u2192'; ar1.className='aa flipped'; ar1.style.left=AP.a1+'px';
         ar2.textContent='\u2192'; ar2.className='aa flipped'; ar2.style.left=AP.a2+'px';
         ar3.textContent='\u2192'; ar3.className='aa flipped'; ar3.style.left=AP.a3+'px';
+        showRows(4);
         setTimeout(function(){
           lp.textContent='head'; lp.style.left=P.n1+'px'; lp.style.color='#ffe066'; lp.style.opacity='1';
-          nar.textContent='\u2705 Done! return prev \u2192 reversed: 3 \u2192 2 \u2192 1 \u2192 null';
         }, 500);
       }
     ];
@@ -838,11 +917,7 @@
     var cur = 0, playing = false, timer = null;
     var dots = document.getElementById('pdots');
     var btnP = document.getElementById('pbp');
-    var btnF = document.getElementById('pbf');
-    var btnB = document.getElementById('pbb');
-    var btnR = document.getElementById('pbr');
 
-    // Build dots
     for (var i = 0; i <= TOTAL; i++) {
       var d = document.createElement('div');
       d.className = 'pc-dot';
@@ -855,49 +930,24 @@
       }
     }
 
-    function goTo(idx) {
-      if (idx < 0 || idx > TOTAL) return;
-      cur = idx;
-      // Reset everything to frame 0 state instantly if going backwards
-      // For simplicity, always rebuild from 0 up to idx
-      var orig = document.querySelectorAll('.an, .aa, .an-null, .ap');
-      orig.forEach(function(el){ el.style.transition = 'none'; });
-      frames[0]();
-      if (idx > 0) {
-        // Apply intermediate frames without transition, then last with transition
-        for (var i = 1; i < idx; i++) {
-          // Apply frame instantly (skip setTimeout parts by running them directly)
-          applyInstant(i);
-        }
-        // Restore transitions for the final frame
-        void nd1.offsetWidth; // force reflow
-        orig.forEach(function(el){ el.style.transition = ''; });
-        frames[idx]();
-      } else {
-        void nd1.offsetWidth;
-        orig.forEach(function(el){ el.style.transition = ''; });
-      }
-      updateDots();
-    }
-
-    // Apply a frame instantly (no animations, no timeouts)
     function applyInstant(idx) {
-      if (idx === 1) {
+      if (idx === 0) { frames[0](); return; }
+      if (idx >= 1) {
         ar1.textContent='\u2190'; ar1.className='aa flipped';
-        nd1.className='an done'; nd2.className='an';
+        nd1.className='an done'; nd2.className=(idx===1)?'an glow':'an';
         lp.style.left=P.n1+'px'; lc.style.left=P.n2+'px';
-      } else if (idx === 2) {
-        ar1.textContent='\u2190'; ar1.className='aa flipped';
+      }
+      if (idx >= 2) {
         ar2.textContent='\u2190'; ar2.className='aa flipped';
-        nd1.className='an done'; nd2.className='an done'; nd3.className='an';
+        nd2.className='an done'; nd3.className=(idx===2)?'an glow':'an';
         lp.style.left=P.n2+'px'; lc.style.left=P.n3+'px';
-      } else if (idx === 3) {
-        ar1.textContent='\u2190'; ar1.className='aa flipped';
-        ar2.textContent='\u2190'; ar2.className='aa flipped';
+      }
+      if (idx >= 3) {
         ar3.textContent='\u2190'; ar3.className='aa flipped';
-        nd1.className='an done'; nd2.className='an done'; nd3.className='an done';
+        nd3.className='an done';
         lp.style.left=P.n3+'px'; lc.style.left=P.nr+'px';
-      } else if (idx === 4) {
+      }
+      if (idx >= 4) {
         nd3.style.left=P.n1+'px'; nd3.className='an done-bright';
         nd2.style.left=P.n2+'px'; nd2.className='an done-bright';
         nd1.style.left=P.n3+'px'; nd1.className='an done-bright';
@@ -906,38 +956,46 @@
         ar3.textContent='\u2192'; ar3.className='aa flipped';
         nl.style.opacity='0'; lp.textContent='head'; lp.style.left=P.n1+'px'; lp.style.color='#ffe066';
         lc.style.opacity='0';
-        nar.textContent='\u2705 Done! return prev \u2192 reversed: 3 \u2192 2 \u2192 1 \u2192 null';
       }
+      showRows(idx);
     }
 
-    function step(dir) {
-      var next = cur + dir;
-      if (next < 0 || next > TOTAL) return;
-      goTo(next);
+    function goTo(idx) {
+      if (idx < 0 || idx > TOTAL) return;
+      cur = idx;
+      var els = document.querySelectorAll('.an, .aa, .an-null, .ap');
+      els.forEach(function(el){ el.style.transition = 'none'; });
+      frames[0]();
+      if (idx > 0) {
+        for (var i = 1; i < idx; i++) applyInstant(i);
+        void nd1.offsetWidth;
+        els.forEach(function(el){ el.style.transition = ''; });
+        frames[idx]();
+      } else {
+        void nd1.offsetWidth;
+        els.forEach(function(el){ el.style.transition = ''; });
+      }
+      updateDots();
     }
 
     function play() {
       if (cur >= TOTAL) goTo(0);
-      playing = true;
-      btnP.textContent = '\u23F8';
+      playing = true; btnP.textContent = '\u23F8';
       advance();
     }
     function pause() {
-      playing = false;
-      clearTimeout(timer);
-      btnP.textContent = '\u25B6';
+      playing = false; clearTimeout(timer); btnP.textContent = '\u25B6';
     }
     function advance() {
       if (!playing || cur >= TOTAL) { pause(); return; }
       goTo(cur + 1);
-      // Wait longer for frames with two-phase animations
-      timer = setTimeout(advance, cur === TOTAL ? 1000 : 1800);
+      timer = setTimeout(advance, 1800);
     }
 
-    btnP.addEventListener('click', function(){ playing ? pause() : play(); });
-    btnF.addEventListener('click', function(){ pause(); step(1); });
-    btnB.addEventListener('click', function(){ pause(); step(-1); });
-    btnR.addEventListener('click', function(){ pause(); goTo(0); });
+    document.getElementById('pbp').addEventListener('click', function(){ playing ? pause() : play(); });
+    document.getElementById('pbf').addEventListener('click', function(){ pause(); if(cur<TOTAL) goTo(cur+1); });
+    document.getElementById('pbb').addEventListener('click', function(){ pause(); if(cur>0) goTo(cur-1); });
+    document.getElementById('pbr').addEventListener('click', function(){ pause(); goTo(0); });
 
     goTo(0);
   })();
