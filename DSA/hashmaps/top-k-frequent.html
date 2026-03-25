@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top K Frequent Elements — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* --- Typography --- */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* --- Boxes --- */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* --- Bucket Visualization --- */
+  .bucket-viz {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px 0;
+  }
+
+  .bucket-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bucket-index {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: #7fd4ff;
+    min-width: clamp(60px, 14vw, 80px);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .bucket-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-height: clamp(24px, 5.5vw, 30px);
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: rgba(255,255,255,0.4);
+  }
+
+  .bucket-content.has-items {
+    border-color: rgba(255,224,102,0.3);
+    background: rgba(255,224,102,0.06);
+    color: #ffe066;
+    font-weight: 700;
+  }
+
+  .bucket-content.active {
+    border-color: rgba(144,238,144,0.4);
+    background: rgba(144,238,144,0.08);
+    color: #90ee90;
+    box-shadow: 0 0 8px rgba(144,238,144,0.12);
+  }
+
+  /* --- Frequency Map Viz --- */
+  .freq-map {
+    display: flex;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 14px);
+    margin: 6px 0;
+    flex-wrap: wrap;
+  }
+
+  .freq-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .freq-key {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #ffe066;
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,224,102,0.5);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .freq-arrow {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(10px, 2.3vw, 12px);
+    color: rgba(255,255,255,0.4);
+  }
+
+  .freq-val {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(12px, 2.8vw, 15px);
+    font-weight: 700;
+    color: #ff9ecf;
+  }
+
+  /* --- Code block --- */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* --- Insight & Complexity --- */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* --- Back button --- */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+
+  /* --- Use cases --- */
+  .use-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 4px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 2px 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">&#8592; Back</a>
+
+  <div class="title">Top K Frequent Elements</div>
+  <div class="subtitle">LC #347 | Frequency Map + Bucket Sort</div>
+
+  <hr class="divider">
+
+  <!-- Problem -->
+  <div class="section-label">The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">Given an integer array <strong>nums</strong> and an integer <strong>k</strong>, return the <span class="pink">k most frequent</span> elements. You may return the answer in any order.</div>
+  </div>
+
+  <div class="chalk" style="text-align:center;">
+    <strong>Input:</strong> nums = [1,1,1,2,2,3], k = 2<br>
+    <strong>Output:</strong> <span class="green">[1, 2]</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Intuition -->
+  <div class="section-label">Intuition</div>
+  <div class="chalk">
+    Count frequencies first. Then instead of sorting (<span class="pink">O(n log n)</span>), use <strong>BUCKET SORT</strong> &mdash; bucket index = frequency, bucket contents = elements with that frequency. Iterate from the <span class="green">highest bucket down</span>.
+  </div>
+
+  <hr class="divider">
+
+  <!-- Step 1: Frequency Map -->
+  <div class="section-label">Visualization</div>
+
+  <div class="step-box">
+    <div class="step-title">Step 1: Build Frequency Map</div>
+    <div class="chalk">Count how many times each number appears:</div>
+    <div class="freq-map">
+      <div class="freq-entry">
+        <div class="freq-key">1</div>
+        <div class="freq-arrow">&#8595;</div>
+        <div class="freq-val">3</div>
+      </div>
+      <div class="freq-entry">
+        <div class="freq-key">2</div>
+        <div class="freq-arrow">&#8595;</div>
+        <div class="freq-val">2</div>
+      </div>
+      <div class="freq-entry">
+        <div class="freq-key">3</div>
+        <div class="freq-arrow">&#8595;</div>
+        <div class="freq-val">1</div>
+      </div>
+    </div>
+    <div class="chalk" style="text-align:center;"><span class="cyan">{1:3, 2:2, 3:1}</span></div>
+  </div>
+
+  <!-- Step 2: Bucket Sort -->
+  <div class="step-box">
+    <div class="step-title">Step 2: Bucket Sort (max bucket = n)</div>
+    <div class="chalk">Create buckets indexed by <span class="pink">frequency</span>. Place each element in its frequency bucket:</div>
+    <div class="bucket-viz">
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[6]:</div>
+        <div class="bucket-content">[ ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[5]:</div>
+        <div class="bucket-content">[ ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[4]:</div>
+        <div class="bucket-content">[ ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[3]:</div>
+        <div class="bucket-content active">[ 1 ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[2]:</div>
+        <div class="bucket-content has-items">[ 2 ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[1]:</div>
+        <div class="bucket-content has-items">[ 3 ]</div>
+      </div>
+      <div class="bucket-row">
+        <div class="bucket-index">bucket[0]:</div>
+        <div class="bucket-content">[ ]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Collect -->
+  <div class="step-box">
+    <div class="step-title">Step 3: Iterate from Highest Bucket Down</div>
+    <div class="chalk">Walk from bucket[6] down, collecting elements until we have <strong>k = 2</strong>:</div>
+    <div class="chalk" style="text-align:center; margin-top:4px;">
+      bucket[3] &#8594; grab <span class="green">1</span> &nbsp;&nbsp;(result: [1])<br>
+      bucket[2] &#8594; grab <span class="green">2</span> &nbsp;&nbsp;(result: [1, 2])<br>
+      <span class="green">Done! result.length = k</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Why Bucket Sort? -->
+  <div class="section-label">Why Bucket Sort?</div>
+  <div class="solution-box">
+    <div class="chalk">
+      Regular sort: <span class="pink">O(n log n)</span><br>
+      Bucket sort: <span class="green">O(n)</span><br><br>
+      Max frequency is at most <strong>n</strong>, so the bucket array size is <strong>bounded by n</strong> &mdash; no comparison sort needed!
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Code -->
+  <div class="section-label">Code Template</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">topKFrequent</span>(nums, k) {
+  <span class="cm">// Step 1: Count frequencies</span>
+  <span class="kw">const</span> freq = <span class="kw">new</span> <span class="fn">Map</span>();
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    freq.<span class="fn">set</span>(num, (freq.<span class="fn">get</span>(num) || <span class="num">0</span>) + <span class="num">1</span>);
+  }
+
+  <span class="cm">// Step 2: Bucket sort</span>
+  <span class="cm">// bucket[i] = elements with frequency i</span>
+  <span class="kw">const</span> buckets = <span class="kw">new</span> <span class="fn">Array</span>(nums.length + <span class="num">1</span>)
+    .<span class="fn">fill</span>(<span class="kw">null</span>).<span class="fn">map</span>(() => []);
+  <span class="kw">for</span> (<span class="kw">const</span> [num, count] <span class="kw">of</span> freq) {
+    buckets[count].<span class="fn">push</span>(num);
+  }
+
+  <span class="cm">// Step 3: Collect top k</span>
+  <span class="kw">const</span> result = [];
+  <span class="kw">for</span> (<span class="kw">let</span> i = buckets.length - <span class="num">1</span>;
+       i >= <span class="num">0</span> && result.length < k; i--) {
+    result.<span class="fn">push</span>(...buckets[i]);
+  }
+  <span class="kw">return</span> result;
+}</div>
+
+  <hr class="divider">
+
+  <!-- When to Use -->
+  <div class="section-label">When to Use</div>
+  <div class="use-cases">
+    <span class="pill" style="border-color: rgba(255,158,207,0.3); color: #ff9ecf;">"top k"</span>
+    <span class="pill" style="border-color: rgba(255,158,207,0.3); color: #ff9ecf;">"most frequent"</span>
+    <span class="pill" style="border-color: rgba(255,158,207,0.3); color: #ff9ecf;">"k-th most common"</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Key Insights -->
+  <div class="section-label">Key Insights</div>
+
+  <div class="insight">
+    <div class="insight-label">1. O(n) without comparison sort</div>
+    <div class="chalk">Frequency map + bucket sort = <span class="green">O(n)</span>. Bucket index <strong>is</strong> the frequency &mdash; natural ordering without comparison sort.</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">2. Two-layer hashmap pattern</div>
+    <div class="chalk">First map <span class="cyan">values &#8594; counts</span>, then organize <span class="cyan">counts &#8594; values</span>. This inversion is the core trick.</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">3. Heap alternative</div>
+    <div class="chalk">A <span class="pink">min-heap of size k</span> gives <span class="orange">O(n log k)</span> &mdash; useful when <strong>k &laquo; n</strong>, but bucket sort is simpler and faster for general case.</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">4. Bounded bucket array</div>
+    <div class="chalk">Max frequency is at most <strong>n</strong>, so bucket array never exceeds input size. No extra log factor needed.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Complexity -->
+  <div class="section-label">Complexity</div>
+  <div class="complexity">
+    <span class="badge"><span class="t">Time:</span> O(n)</span>
+    <span class="badge"><span class="s">Space:</span> O(n)</span>
+  </div>
+
+</div>
+</body>
+</html>

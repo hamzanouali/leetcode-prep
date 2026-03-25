@@ -74,6 +74,15 @@
     margin-top: -4px;
   }
 
+  .topic-label {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(16px, 3.6vw, 20px);
+    color: #ffe066;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 8px rgba(255,224,102,0.12);
+    margin-top: 4px;
+    text-align: center;
+  }
+
   .level-label {
     font-family: 'Permanent Marker', cursive;
     font-size: clamp(14px, 3.2vw, 17px);
@@ -144,13 +153,25 @@
     border-top: 1px dashed rgba(255,255,255,0.12);
     margin: 4px 0;
   }
+
+  hr.topic-divider {
+    border: none;
+    border-top: 2px solid rgba(255,224,102,0.2);
+    margin: 10px 0 4px;
+  }
 </style>
 </head>
 <body>
 <div class="board">
 
-  <div class="title">Linked Lists Patterns</div>
-  <div class="subtitle">Interactive Lecture Boards — DSA Prep</div>
+  <div class="title">DSA Lecture Boards</div>
+  <div class="subtitle">Interactive Pattern Guides — LeetCode Prep</div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--            LINKED LISTS               -->
+  <!-- ══════════════════════════════════════ -->
+  <hr class="topic-divider">
+  <div class="topic-label">Linked Lists</div>
 
   <div class="link-list">
     <a class="link-item" href="DSA/linked-lists/pattern-triggers.html" style="border-color: rgba(127,212,255,0.3); background: rgba(127,212,255,0.06);">
@@ -272,6 +293,138 @@
     <a class="link-item" href="DSA/linked-lists/lru-cache-mistakes.html" style="margin-left:16px; border-color:rgba(255,107,107,0.2); background:rgba(255,107,107,0.04);">
       <div class="link-title" style="color:#ff6b6b; font-size:clamp(12px,2.8vw,15px);">Common Mistakes — LRU Cache</div>
       <div class="link-desc">Wrong data structures and edge cases that break O(1)</div>
+    </a>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--              ARRAYS                   -->
+  <!-- ══════════════════════════════════════ -->
+  <hr class="topic-divider">
+  <div class="topic-label">Arrays</div>
+
+  <!-- Level 1 -->
+  <div class="level-label l1">Level 1 — Foundations</div>
+  <div class="level-sub">Core array traversal techniques</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/arrays/two-pointers.html">
+      <div class="link-title">Two Pointers — Opposite Direction</div>
+      <div class="link-desc">Start from both ends, walk inward — LC #167 / #125</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/sliding-window.html">
+      <div class="link-title">Sliding Window</div>
+      <div class="link-desc">Fixed & variable width windows — LC #209 / #3</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/prefix-sum.html">
+      <div class="link-title">Prefix Sum</div>
+      <div class="link-desc">Precompute for O(1) range queries — LC #303 / #560</div>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Level 2 -->
+  <div class="level-label l2">Level 2 — Builds on Level 1</div>
+  <div class="level-sub">Classic single-array problems</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/arrays/binary-search.html">
+      <div class="link-title">Binary Search</div>
+      <div class="link-desc">Halve the search space every step — LC #704 / #35</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/kadanes-algorithm.html">
+      <div class="link-title">Kadane's Algorithm</div>
+      <div class="link-desc">Maximum subarray sum in O(n) — LC #53</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/sort-colors.html">
+      <div class="link-title">Dutch National Flag</div>
+      <div class="link-desc">Three-way partition in one pass — LC #75</div>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Level 3 -->
+  <div class="level-label l3">Level 3 — Combines Level 1 + 2</div>
+  <div class="level-sub">Multi-technique array problems</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/arrays/three-sum.html">
+      <div class="link-title">3Sum</div>
+      <div class="link-desc">Sort + fix one + two pointers — LC #15</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/container-with-most-water.html">
+      <div class="link-title">Container With Most Water</div>
+      <div class="link-desc">Two pointers — greedy shrink — LC #11</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/merge-intervals.html">
+      <div class="link-title">Merge Intervals</div>
+      <div class="link-desc">Sort by start, merge overlaps — LC #56</div>
+    </a>
+    <a class="link-item" href="DSA/arrays/product-except-self.html">
+      <div class="link-title">Product of Array Except Self</div>
+      <div class="link-desc">Left x right prefix products — LC #238</div>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Level 4 -->
+  <div class="level-label l4">Level 4 — Advanced</div>
+  <div class="level-sub">The hard classics</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/arrays/trapping-rain-water.html">
+      <div class="link-title">Trapping Rain Water</div>
+      <div class="link-desc">Two pointers or prefix max — LC #42</div>
+    </a>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!--             HASHMAPS                  -->
+  <!-- ══════════════════════════════════════ -->
+  <hr class="topic-divider">
+  <div class="topic-label">Hashmaps</div>
+
+  <!-- Level 1 -->
+  <div class="level-label l1">Level 1 — Foundations</div>
+  <div class="level-sub">Core hashmap patterns</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/hashmaps/two-sum.html">
+      <div class="link-title">Two Sum</div>
+      <div class="link-desc">The classic complement lookup — LC #1</div>
+    </a>
+    <a class="link-item" href="DSA/hashmaps/frequency-counting.html">
+      <div class="link-title">Frequency Counting</div>
+      <div class="link-desc">Count occurrences, anagrams, duplicates — LC #242 / #217</div>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Level 2 -->
+  <div class="level-label l2">Level 2 — Builds on Level 1</div>
+  <div class="level-sub">Hashmap as the key insight</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/hashmaps/group-anagrams.html">
+      <div class="link-title">Group Anagrams</div>
+      <div class="link-desc">Canonical key grouping — LC #49</div>
+    </a>
+    <a class="link-item" href="DSA/hashmaps/longest-consecutive-sequence.html">
+      <div class="link-title">Longest Consecutive Sequence</div>
+      <div class="link-desc">HashSet + smart starting points — LC #128</div>
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Level 3 -->
+  <div class="level-label l3">Level 3 — Combines Techniques</div>
+  <div class="level-sub">Hashmap + prefix sum combos</div>
+  <div class="link-list">
+    <a class="link-item" href="DSA/hashmaps/subarray-sum-equals-k.html">
+      <div class="link-title">Subarray Sum Equals K</div>
+      <div class="link-desc">Prefix sum + hashmap combo — LC #560</div>
+    </a>
+    <a class="link-item" href="DSA/hashmaps/top-k-frequent.html">
+      <div class="link-title">Top K Frequent Elements</div>
+      <div class="link-desc">Frequency map + bucket sort — LC #347</div>
     </a>
   </div>
 

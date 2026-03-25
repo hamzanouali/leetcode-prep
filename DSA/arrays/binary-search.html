@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* ─── Typography ─── */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* ─── Array Cells ─── */
+  .arr-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .cell {
+    width: clamp(30px, 7vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  .cell.active { background: rgba(255,224,102,0.15); border-color: #ffe066; color: #ffe066; box-shadow: 0 0 8px rgba(255,224,102,0.2); }
+  .cell.left { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+  .cell.right { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .cell.dim { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.3); }
+  .cell.done { background: rgba(144,238,144,0.12); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.15); }
+
+  .idx-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin-top: -2px;
+  }
+
+  .idx-cell {
+    width: clamp(30px, 7vw, 38px);
+    text-align: center;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(9px, 2vw, 11px);
+    color: rgba(255,255,255,0.4);
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  .ptr-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin-top: 1px;
+  }
+
+  .ptr-cell {
+    width: clamp(30px, 7vw, 38px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+  .ptr-cell.pk { color: #ff9ecf; }
+  .ptr-cell.cy { color: #7fd4ff; }
+  .ptr-cell.yl { color: #ffe066; }
+  .ptr-cell.gn { color: #90ee90; }
+
+  /* ─── Problem / Solution / Step boxes ─── */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Code block ─── */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* ─── Chalk Table ─── */
+  .chalk-table-wrap { overflow-x: auto; margin: 4px 0; }
+
+  .chalk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .chalk-table thead th {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 2px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+  }
+
+  .chalk-table tbody td {
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+  }
+  .chalk-table tbody td strong { color: #ffe066; }
+
+  .chalk-table .row-i1 td { background: rgba(255,158,207,0.04); }
+  .chalk-table .row-i2 td { background: rgba(127,212,255,0.04); }
+  .chalk-table .row-i3 td { background: rgba(144,238,144,0.04); }
+  .chalk-table .row-final td { border-bottom: 2px solid rgba(144,238,144,0.2); }
+
+  /* ─── Insight & Complexity ─── */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* ─── Use-case pills ─── */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 4px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 2px 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ─── Variation box ─── */
+  .var-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(127,212,255,0.15);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+  .var-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #7fd4ff;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Back button ─── */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">&#8592; Back</a>
+
+  <div class="title">Binary Search</div>
+  <div class="subtitle">LC #704, #35, #34 &nbsp;|&nbsp; Halve the search space every step</div>
+
+  <hr class="divider">
+
+  <!-- ─── Problem ─── -->
+  <div class="section-label">The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given a <strong>sorted array</strong>, find a <span class="pink">target</span> value's index &mdash; or determine where it <em>would</em> be inserted.<br>
+      Brute force scans every element: <span class="pink">O(n)</span>. Can we do better?
+    </div>
+  </div>
+
+  <!-- ─── Idea ─── -->
+  <div class="section-label">The Idea</div>
+  <div class="solution-box">
+    <div class="chalk">
+      Since the array is <strong>sorted</strong>, compare the target to the <span class="orange">middle</span> element:<br>
+      &bull; If equal &rarr; <span class="green">found it!</span><br>
+      &bull; If target is bigger &rarr; search the <span class="pink">right half</span><br>
+      &bull; If target is smaller &rarr; search the <span class="cyan">left half</span><br>
+      Each step <strong>eliminates half</strong> the remaining elements.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Visual: Initial Array ─── -->
+  <div class="section-label">Walkthrough: search for 9</div>
+
+  <div class="chalk" style="text-align:center; margin-bottom:2px;">Array: <strong>[1, 3, 5, 7, 9, 11, 13]</strong></div>
+
+  <!-- Step 1 -->
+  <div class="step-box">
+    <div class="step-title">Step 1: L=0, R=6, M=3</div>
+    <div class="arr-row">
+      <div class="cell left">1</div>
+      <div class="cell">3</div>
+      <div class="cell">5</div>
+      <div class="cell active">7</div>
+      <div class="cell">9</div>
+      <div class="cell">11</div>
+      <div class="cell right">13</div>
+    </div>
+    <div class="ptr-row">
+      <div class="ptr-cell pk">&uarr;L</div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell yl">&uarr;M</div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell cy">&uarr;R</div>
+    </div>
+    <div class="chalk" style="margin-top:4px;">
+      arr[<span class="orange">3</span>] = <strong>7</strong> &lt; 9 &rarr; target is <span class="pink">bigger</span>, so <strong>L = M + 1 = 4</strong>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step-box">
+    <div class="step-title">Step 2: L=4, R=6, M=5</div>
+    <div class="arr-row">
+      <div class="cell dim">1</div>
+      <div class="cell dim">3</div>
+      <div class="cell dim">5</div>
+      <div class="cell dim">7</div>
+      <div class="cell left">9</div>
+      <div class="cell active">11</div>
+      <div class="cell right">13</div>
+    </div>
+    <div class="ptr-row">
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell pk">&uarr;L</div>
+      <div class="ptr-cell yl">&uarr;M</div>
+      <div class="ptr-cell cy">&uarr;R</div>
+    </div>
+    <div class="chalk" style="margin-top:4px;">
+      arr[<span class="orange">5</span>] = <strong>11</strong> &gt; 9 &rarr; target is <span class="cyan">smaller</span>, so <strong>R = M - 1 = 4</strong>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-box">
+    <div class="step-title">Step 3: L=4, R=4, M=4</div>
+    <div class="arr-row">
+      <div class="cell dim">1</div>
+      <div class="cell dim">3</div>
+      <div class="cell dim">5</div>
+      <div class="cell dim">7</div>
+      <div class="cell done">9</div>
+      <div class="cell dim">11</div>
+      <div class="cell dim">13</div>
+    </div>
+    <div class="ptr-row">
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell gn">&uarr;L,M,R</div>
+      <div class="ptr-cell"></div>
+      <div class="ptr-cell"></div>
+    </div>
+    <div class="chalk" style="margin-top:4px;">
+      arr[<span class="orange">4</span>] = <strong>9</strong> === 9 &rarr; <span class="green">Found! Return index 4</span>
+    </div>
+  </div>
+
+  <!-- ─── Trace Table ─── -->
+  <div class="chalk-table-wrap">
+    <table class="chalk-table">
+      <thead>
+        <tr><th>Step</th><th>L</th><th>R</th><th>M</th><th>arr[M]</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr class="row-i1"><td>1</td><td>0</td><td>6</td><td>3</td><td>7</td><td>7 &lt; 9 &rarr; L=4</td></tr>
+        <tr class="row-i2"><td>2</td><td>4</td><td>6</td><td>5</td><td>11</td><td>11 &gt; 9 &rarr; R=4</td></tr>
+        <tr class="row-i3 row-final"><td>3</td><td>4</td><td>4</td><td>4</td><td><strong>9</strong></td><td style="color:#90ee90;">Found!</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Code ─── -->
+  <div class="section-label">Code Template</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">binarySearch</span>(nums, target) {
+  <span class="kw">let</span> left = <span class="num">0</span>, right = nums.length - <span class="num">1</span>;
+  <span class="kw">while</span> (left <= right) {
+    <span class="kw">const</span> mid = Math.<span class="fn">floor</span>((left + right) / <span class="num">2</span>);
+    <span class="kw">if</span> (nums[mid] === target) <span class="kw">return</span> mid;
+    <span class="kw">if</span> (nums[mid] < target) left = mid + <span class="num">1</span>;
+    <span class="kw">else</span> right = mid - <span class="num">1</span>;
+  }
+  <span class="kw">return</span> -<span class="num">1</span>; <span class="cm">// not found (or return left for insert pos)</span>
+}</div>
+
+  <hr class="divider">
+
+  <!-- ─── Variations ─── -->
+  <div class="section-label">Variations</div>
+
+  <div class="var-box">
+    <div class="var-title">Left Bound (First Occurrence)</div>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">leftBound</span>(nums, target) {
+  <span class="kw">let</span> left = <span class="num">0</span>, right = nums.length - <span class="num">1</span>;
+  <span class="kw">while</span> (left <= right) {
+    <span class="kw">const</span> mid = Math.<span class="fn">floor</span>((left + right) / <span class="num">2</span>);
+    <span class="kw">if</span> (nums[mid] >= target) right = mid - <span class="num">1</span>;
+    <span class="kw">else</span> left = mid + <span class="num">1</span>;
+  }
+  <span class="kw">return</span> left; <span class="cm">// first index where nums[i] >= target</span>
+}</div>
+    <div class="chalk" style="margin-top:4px;">
+      When we find target, <strong>don't stop</strong> &mdash; keep searching <span class="cyan">left</span> by setting <strong>R = M - 1</strong>.
+    </div>
+  </div>
+
+  <div class="var-box">
+    <div class="var-title">Right Bound (Last Occurrence)</div>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">rightBound</span>(nums, target) {
+  <span class="kw">let</span> left = <span class="num">0</span>, right = nums.length - <span class="num">1</span>;
+  <span class="kw">while</span> (left <= right) {
+    <span class="kw">const</span> mid = Math.<span class="fn">floor</span>((left + right) / <span class="num">2</span>);
+    <span class="kw">if</span> (nums[mid] <= target) left = mid + <span class="num">1</span>;
+    <span class="kw">else</span> right = mid - <span class="num">1</span>;
+  }
+  <span class="kw">return</span> right; <span class="cm">// last index where nums[i] <= target</span>
+}</div>
+    <div class="chalk" style="margin-top:4px;">
+      When we find target, <strong>don't stop</strong> &mdash; keep searching <span class="pink">right</span> by setting <strong>L = M + 1</strong>.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── When to Use ─── -->
+  <div class="section-label">When to Use</div>
+  <div class="pill-row">
+    <span class="pill">Sorted array</span>
+    <span class="pill">"Search for..."</span>
+    <span class="pill">"Find minimum that satisfies"</span>
+    <span class="pill">Monotonic condition</span>
+    <span class="pill">Insert position</span>
+    <span class="pill">First/last occurrence</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Key Insights ─── -->
+  <div class="section-label">Key Insights</div>
+
+  <div class="insight">
+    <div class="insight-label">1. Half the work every step</div>
+    <div class="chalk">
+      Each comparison eliminates <strong>half</strong> the search space. That's why it's <span class="green">O(log n)</span> &mdash; even 1 billion elements only takes ~30 steps.
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">2. left &lt;= right vs left &lt; right</div>
+    <div class="chalk">
+      Using <strong>&lt;=</strong> means you check every element (search space is [L, R] <em>inclusive</em>). Using <strong>&lt;</strong> stops one step early &mdash; useful when you need L and R to converge to a single answer without overshooting.
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">3. "Binary search the answer"</div>
+    <div class="chalk">
+      Sometimes you can't search the array directly. Instead, <span class="pink">binary search on the answer space</span>: guess a value, check if it works, then narrow the range. Works whenever the condition is <strong>monotonic</strong> (once true, stays true).
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Complexity ─── -->
+  <div class="section-label">Complexity</div>
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(log n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+
+</div>
+</body>
+</html>

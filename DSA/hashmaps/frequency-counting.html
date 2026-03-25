@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frequency Counting — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* --- Typography --- */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* --- Problem / Solution / Step boxes --- */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 8px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 8px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 11px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 3px;
+  }
+
+  /* --- Map Visualization --- */
+  .map-viz {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(127,212,255,0.15);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 5px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+
+  .map-entry {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+  }
+
+  .map-key {
+    color: #ffe066;
+    font-weight: 700;
+  }
+
+  .map-val {
+    color: #7fd4ff;
+    font-weight: 700;
+  }
+
+  .map-sep {
+    color: rgba(255,255,255,0.4);
+  }
+
+  /* --- Code block --- */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* --- Insight & Complexity --- */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* --- Use case pills --- */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 4px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 2px 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* --- Back button --- */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">&#8592; Back</a>
+
+  <div class="title">Frequency Counting</div>
+  <div class="subtitle">LC #242, #217, #383 | Count occurrences with a hashmap</div>
+
+  <hr class="divider">
+
+  <!-- ===== APPLICATION 1: Valid Anagram ===== -->
+  <div class="section-label">App 1: Valid Anagram (LC #242)</div>
+
+  <div class="problem-box">
+    <p class="chalk"><span class="pink">Problem:</span> Given two strings <strong>s</strong> and <strong>t</strong>, return <span class="green">true</span> if t is an anagram of s.</p>
+    <p class="chalk" style="margin-top:4px;">s = <strong>"anagram"</strong>, t = <strong>"nagaram"</strong></p>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 1: Build frequency map for s</div>
+    <p class="chalk">Count every character in <strong>s</strong>:</p>
+    <div class="map-viz">
+      <div class="map-entry"><span class="map-key">a</span><span class="map-sep">:</span><span class="map-val">3</span></div>
+      <div class="map-entry"><span class="map-key">n</span><span class="map-sep">:</span><span class="map-val">1</span></div>
+      <div class="map-entry"><span class="map-key">g</span><span class="map-sep">:</span><span class="map-val">1</span></div>
+      <div class="map-entry"><span class="map-key">r</span><span class="map-sep">:</span><span class="map-val">1</span></div>
+      <div class="map-entry"><span class="map-key">m</span><span class="map-sep">:</span><span class="map-val">1</span></div>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 2: Subtract counts for t</div>
+    <p class="chalk">For each char in <strong>t</strong>, decrement count. If any count goes below zero (or key missing), <span class="pink">not an anagram</span>.</p>
+    <div class="map-viz">
+      <div class="map-entry"><span class="map-key">a</span><span class="map-sep">:</span><span class="map-val">0</span></div>
+      <div class="map-entry"><span class="map-key">n</span><span class="map-sep">:</span><span class="map-val">0</span></div>
+      <div class="map-entry"><span class="map-key">g</span><span class="map-sep">:</span><span class="map-val">0</span></div>
+      <div class="map-entry"><span class="map-key">r</span><span class="map-sep">:</span><span class="map-val">0</span></div>
+      <div class="map-entry"><span class="map-key">m</span><span class="map-sep">:</span><span class="map-val">0</span></div>
+    </div>
+  </div>
+
+  <div class="solution-box">
+    <p class="chalk"><span class="green">All zeros!</span> The strings are anagrams.</p>
+  </div>
+
+  <div class="section-label">Code: Valid Anagram</div>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">isAnagram</span>(s, t) {
+  <span class="kw">if</span> (s.length !== t.length) <span class="kw">return</span> <span class="num">false</span>;
+  <span class="kw">const</span> count = {};
+  <span class="kw">for</span> (<span class="kw">const</span> c <span class="kw">of</span> s) count[c] = (count[c] || <span class="num">0</span>) + <span class="num">1</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> c <span class="kw">of</span> t) {
+    <span class="kw">if</span> (!count[c]) <span class="kw">return</span> <span class="num">false</span>;
+    count[c]--;
+  }
+  <span class="kw">return</span> <span class="num">true</span>;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ===== APPLICATION 2: Contains Duplicate ===== -->
+  <div class="section-label">App 2: Contains Duplicate (LC #217)</div>
+
+  <div class="problem-box">
+    <p class="chalk"><span class="pink">Problem:</span> Given an integer array <strong>nums</strong>, return <span class="green">true</span> if any value appears <span class="pink">at least twice</span>.</p>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Approach: Use a Set</div>
+    <p class="chalk">Walk through array. For each element, check if it's <span class="pink">already in the Set</span>. If yes, return <span class="green">true</span>. Otherwise, add it.</p>
+    <p class="chalk" style="margin-top:4px;">A <strong>Set</strong> is simpler than a map when you only need to ask: <span class="cyan">"Have I seen this before?"</span></p>
+  </div>
+
+  <div class="section-label">Code: Contains Duplicate</div>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">containsDuplicate</span>(nums) {
+  <span class="kw">const</span> seen = <span class="kw">new</span> <span class="fn">Set</span>();
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    <span class="kw">if</span> (seen.<span class="fn">has</span>(num)) <span class="kw">return</span> <span class="num">true</span>;
+    seen.<span class="fn">add</span>(num);
+  }
+  <span class="kw">return</span> <span class="num">false</span>;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ===== When to Use ===== -->
+  <div class="section-label">When to Use</div>
+
+  <div class="pill-row">
+    <span class="pill">count occurrences</span>
+    <span class="pill">find duplicates</span>
+    <span class="pill">anagram</span>
+    <span class="pill">permutation check</span>
+    <span class="pill">ransom note</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== Key Insights ===== -->
+  <div class="section-label">Key Insights</div>
+
+  <div class="insight">
+    <div class="insight-label">1. Frequency Map</div>
+    <p class="chalk"><strong>{element &rarr; count}</strong>. Increment for one string, decrement for another. If all counts are zero, the two collections match.</p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">2. Set = "Seen Before?"</div>
+    <p class="chalk">When you <span class="pink">don't need counts</span>, a <strong>Set</strong> is simpler. Just check membership: <span class="cyan">seen.has(x)</span>.</p>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">3. Fixed Alphabet Trick</div>
+    <p class="chalk">For <span class="orange">lowercase letters only</span>, an array of size <strong>26</strong> works and is faster than a map. Index = <span class="cyan">charCodeAt(0) - 97</span>.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== Complexity ===== -->
+  <div class="section-label">Complexity</div>
+
+  <div class="complexity">
+    <span class="badge"><span class="t">Time:</span> O(n)</span>
+    <span class="badge"><span class="s">Space:</span> O(k)</span>
+  </div>
+  <p class="chalk" style="text-align:center;">where <strong>k</strong> = number of unique elements</p>
+
+</div>
+</body>
+</html>

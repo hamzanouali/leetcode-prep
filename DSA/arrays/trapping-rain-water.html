@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trapping Rain Water — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* ─── Typography ─── */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+  .chalk .red { color: #ff6b6b; }
+
+  /* ─── Problem / Solution / Step boxes ─── */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Bar Chart ─── */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    margin: 8px 0 2px;
+    height: clamp(90px, 22vw, 130px);
+    padding: 0 4px;
+  }
+
+  .bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+    max-width: clamp(28px, 6vw, 36px);
+    height: 100%;
+  }
+
+  .water {
+    width: 100%;
+    background: rgba(100,180,255,0.35);
+    border: 1px solid rgba(127,212,255,0.4);
+    border-bottom: none;
+    border-radius: 2px 2px 0 0;
+    min-height: 0;
+  }
+
+  .bar {
+    width: 100%;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 2px 2px 0 0;
+    min-height: 0;
+  }
+
+  .bar-label {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    color: rgba(255,255,255,0.55);
+    margin-top: 2px;
+    text-align: center;
+  }
+
+  .bar-ptr-row {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 2px;
+    padding: 0 4px;
+  }
+
+  .bar-ptr-cell {
+    flex: 1;
+    max-width: clamp(28px, 6vw, 36px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+  }
+
+  .bar-ptr-cell.lp { color: #ff9ecf; }
+  .bar-ptr-cell.rp { color: #7fd4ff; }
+
+  /* ─── Code block ─── */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* ─── Insight & Complexity ─── */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* ─── Trace table ─── */
+  .chalk-table-wrap { overflow-x: auto; margin: 4px 0; }
+
+  .chalk-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.85);
+  }
+
+  .chalk-table thead th {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 2px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+  }
+
+  .chalk-table tbody td {
+    padding: 5px 6px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+  }
+  .chalk-table tbody td strong { color: #ffe066; }
+
+  /* ─── Use-case pills ─── */
+  .use-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 5px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 2px 10px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">&#8592; Back</a>
+
+  <div class="title">Trapping Rain Water</div>
+  <div class="subtitle">LC #42 | Two Pointers or Prefix Max &mdash; The classic hard problem</div>
+
+  <hr class="divider">
+
+  <!-- ─── Problem ─── -->
+  <div class="section-label">The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">Given an <strong>elevation map</strong> (array of non-negative integers representing bar heights), compute how much <span class="cyan">water is trapped</span> after raining.</div>
+  </div>
+
+  <!-- ─── Visual ─── -->
+  <div class="section-label">Visualize It</div>
+  <div class="chalk" style="text-align:center;">height = [<span class="orange">0,1,0,2,1,0,1,3,2,1,2,1</span>]</div>
+
+  <!-- Bar chart: heights [0,1,0,2,1,0,1,3,2,1,2,1], water [0,0,1,0,1,2,1,0,0,1,0,0] = 6 -->
+  <div class="bar-chart" id="rainChart">
+    <!-- col 0: h=0, w=0 -->
+    <div class="bar-col">
+      <div class="bar-label">0</div>
+    </div>
+    <!-- col 1: h=1, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">1</div>
+    </div>
+    <!-- col 2: h=0, w=1 -->
+    <div class="bar-col">
+      <div class="water" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">0</div>
+    </div>
+    <!-- col 3: h=2, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 2/3);"></div>
+      <div class="bar-label">2</div>
+    </div>
+    <!-- col 4: h=1, w=1 -->
+    <div class="bar-col">
+      <div class="water" style="height:calc(100% * 1/3);"></div>
+      <div class="bar" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">1</div>
+    </div>
+    <!-- col 5: h=0, w=2 -->
+    <div class="bar-col">
+      <div class="water" style="height:calc(100% * 2/3);"></div>
+      <div class="bar-label">0</div>
+    </div>
+    <!-- col 6: h=1, w=1 -->
+    <div class="bar-col">
+      <div class="water" style="height:calc(100% * 1/3);"></div>
+      <div class="bar" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">1</div>
+    </div>
+    <!-- col 7: h=3, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 3/3);"></div>
+      <div class="bar-label">3</div>
+    </div>
+    <!-- col 8: h=2, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 2/3);"></div>
+      <div class="bar-label">2</div>
+    </div>
+    <!-- col 9: h=1, w=1 -->
+    <div class="bar-col">
+      <div class="water" style="height:calc(100% * 1/3);"></div>
+      <div class="bar" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">1</div>
+    </div>
+    <!-- col 10: h=2, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 2/3);"></div>
+      <div class="bar-label">2</div>
+    </div>
+    <!-- col 11: h=1, w=0 -->
+    <div class="bar-col">
+      <div class="bar" style="height:calc(100% * 1/3);"></div>
+      <div class="bar-label">1</div>
+    </div>
+  </div>
+
+  <div class="chalk" style="text-align:center;"><span class="cyan">Blue</span> = trapped water &nbsp; | &nbsp; Total = <strong>6</strong></div>
+
+  <hr class="divider">
+
+  <!-- ─── Core Formula ─── -->
+  <div class="section-label">Core Formula</div>
+  <div class="solution-box">
+    <div class="chalk">Water at position <strong>i</strong> = <span class="pink">min</span>(<span class="cyan">maxLeft</span>, <span class="cyan">maxRight</span>) - <strong>height[i]</strong></div>
+    <div class="chalk" style="margin-top:4px;">The water level at each bar is capped by the <span class="pink">shorter</span> of the two tallest walls on either side.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Approach 1: Prefix ─── -->
+  <div class="section-label">Approach 1: Prefix Max Arrays</div>
+  <div class="step-box">
+    <div class="step-title">Step 1 &mdash; Build leftMax[]</div>
+    <div class="chalk">Scan left to right, tracking the running maximum.</div>
+    <div class="chalk"><span class="cyan">leftMax</span> = [0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3]</div>
+  </div>
+  <div class="step-box">
+    <div class="step-title">Step 2 &mdash; Build rightMax[]</div>
+    <div class="chalk">Scan right to left, tracking the running maximum.</div>
+    <div class="chalk"><span class="cyan">rightMax</span> = [3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 1]</div>
+  </div>
+  <div class="step-box">
+    <div class="step-title">Step 3 &mdash; Compute water</div>
+    <div class="chalk">For each i: water += <span class="pink">min</span>(leftMax[i], rightMax[i]) - height[i]</div>
+    <div class="chalk" style="margin-top:3px;"><span class="orange">Time O(n), Space O(n)</span> &mdash; two extra arrays</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Approach 2: Two Pointers ─── -->
+  <div class="section-label">Approach 2: Two Pointers (Optimal)</div>
+  <div class="solution-box">
+    <div class="chalk">Instead of precomputing arrays, use <span class="pink">two pointers</span> converging inward. Track <span class="cyan">leftMax</span> and <span class="cyan">rightMax</span> on the fly. Always process the <strong>smaller side</strong> &mdash; because the other side is guaranteed to have a wall at least as tall.</div>
+  </div>
+
+  <!-- Pointer diagram -->
+  <div class="bar-ptr-row">
+    <div class="bar-ptr-cell lp">L</div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell"></div>
+    <div class="bar-ptr-cell rp">R</div>
+  </div>
+
+  <!-- ─── Brief Trace ─── -->
+  <div class="section-label">Trace (First Few Steps)</div>
+  <div class="chalk-table-wrap">
+    <table class="chalk-table">
+      <thead>
+        <tr><th>L</th><th>R</th><th>h[L]</th><th>h[R]</th><th>lMax</th><th>rMax</th><th>water</th><th>move</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>11</td><td>0</td><td>1</td><td>0</td><td>1</td><td>+0</td><td><span style="color:#ff9ecf;">L++</span></td></tr>
+        <tr><td>1</td><td>11</td><td>1</td><td>1</td><td>1</td><td>1</td><td>+0</td><td><span style="color:#7fd4ff;">R--</span></td></tr>
+        <tr><td>1</td><td>10</td><td>1</td><td>2</td><td>1</td><td>2</td><td>+0</td><td><span style="color:#ff9ecf;">L++</span></td></tr>
+        <tr><td>2</td><td>10</td><td>0</td><td>2</td><td>1</td><td>2</td><td><strong>+1</strong></td><td><span style="color:#ff9ecf;">L++</span></td></tr>
+        <tr><td>3</td><td>10</td><td>2</td><td>2</td><td>2</td><td>2</td><td>+0</td><td><span style="color:#7fd4ff;">R--</span></td></tr>
+        <tr><td>3</td><td>9</td><td>2</td><td>1</td><td>2</td><td>2</td><td><strong>+1</strong></td><td><span style="color:#7fd4ff;">R--</span></td></tr>
+        <tr><td colspan="7" style="color:rgba(255,255,255,0.4);">...continues until L meets R, total = <strong>6</strong></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Code ─── -->
+  <div class="section-label">Code &mdash; Two Pointer</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">trap</span>(height) {
+  <span class="kw">let</span> left = <span class="num">0</span>, right = height.length - <span class="num">1</span>;
+  <span class="kw">let</span> leftMax = <span class="num">0</span>, rightMax = <span class="num">0</span>;
+  <span class="kw">let</span> water = <span class="num">0</span>;
+
+  <span class="kw">while</span> (left &lt; right) {
+    <span class="kw">if</span> (height[left] &lt; height[right]) {
+      leftMax = <span class="fn">Math.max</span>(leftMax, height[left]);
+      water += leftMax - height[left];
+      left++;
+    } <span class="kw">else</span> {
+      rightMax = <span class="fn">Math.max</span>(rightMax, height[right]);
+      water += rightMax - height[right];
+      right--;
+    }
+  }
+
+  <span class="kw">return</span> water;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ─── When to Use ─── -->
+  <div class="section-label">When to Use</div>
+  <div class="use-cases">
+    <span class="pill">trap water</span>
+    <span class="pill">elevation map</span>
+    <span class="pill">histogram problems</span>
+    <span class="pill">min of two maxes</span>
+    <span class="pill">converging two pointers</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Key Insights ─── -->
+  <div class="section-label">Key Insights</div>
+  <div class="insight">
+    <div class="insight-label">Insight 1</div>
+    <div class="chalk">Water at each position depends on the <span class="pink">MINIMUM</span> of the two maximums on each side. Think of it like a container &mdash; water overflows over the <strong>shorter</strong> wall.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Insight 2</div>
+    <div class="chalk">Two-pointer works because we always process the side with the <span class="pink">smaller boundary</span> &mdash; we <strong>KNOW</strong> the other side has a taller (or equal) wall. So the water level on the smaller side is fully determined.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Insight 3</div>
+    <div class="chalk">This combines <span class="cyan">prefix max</span> + <span class="cyan">two pointers</span> into one elegant O(1) space solution. The prefix arrays are computed <strong>implicitly</strong> as we move inward.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Complexity ─── -->
+  <div class="section-label">Complexity (Two Pointer)</div>
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(1)</span></div>
+  </div>
+
+</div>
+</body>
+</html>

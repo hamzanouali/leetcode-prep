@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prefix Sum — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* --- Typography --- */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* --- Array Cells --- */
+  .arr-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .cell {
+    width: clamp(32px, 7.5vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  .cell.active { background: rgba(255,224,102,0.15); border-color: #ffe066; color: #ffe066; box-shadow: 0 0 8px rgba(255,224,102,0.15); }
+  .cell.highlight { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .cell.done { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .cell.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+  .cell.orange-cell { background: rgba(255,179,71,0.12); border-color: #ffb347; color: #ffb347; box-shadow: 0 0 8px rgba(255,179,71,0.15); }
+  .cell.pink-cell { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+
+  .arr-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.55);
+    min-width: clamp(50px, 12vw, 68px);
+    text-align: right;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .idx-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 1px 0;
+  }
+
+  .idx-cell {
+    width: clamp(32px, 7.5vw, 38px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    color: rgba(255,255,255,0.4);
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  .arrow-down {
+    text-align: center;
+    color: rgba(255,255,255,0.35);
+    font-size: clamp(12px, 2.8vw, 16px);
+    margin: 2px 0;
+  }
+
+  /* --- Boxes --- */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* --- Code block --- */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* --- Insight & Complexity --- */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* --- Use case pills --- */
+  .use-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 5px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 3px 11px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* --- Back button --- */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+
+  /* --- Formula highlight --- */
+  .formula {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,224,102,0.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: center;
+    margin: 5px 0;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: #ffe066;
+  }
+
+  /* --- Example calc --- */
+  .calc-box {
+    background: rgba(127,212,255,0.06);
+    border: 1px solid rgba(127,212,255,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a href="../../index.html" class="back-btn">&#8592; All Topics</a>
+
+  <div class="title">Prefix Sum</div>
+  <div class="subtitle">LC #303, #560, #238 | Precompute to answer range queries in O(1)</div>
+
+  <hr class="divider">
+
+  <!-- PROBLEM -->
+  <div class="section-label">The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given an array of numbers, how do you get the <strong>sum of any subarray</strong> in <span class="pink">O(1)</span> time?
+    </div>
+    <div class="chalk" style="margin-top: 4px;">
+      Brute force: loop from <span class="cyan">i</span> to <span class="cyan">j</span> and add up &mdash; that's <span class="pink">O(n)</span> per query. With many queries, this is too slow.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- IDEA -->
+  <div class="section-label">The Idea</div>
+  <div class="solution-box">
+    <div class="chalk">
+      <strong>Precompute a prefix sum array</strong> where each entry stores the <span class="green">cumulative sum</span> of all elements before it. Then any range sum is just <strong>one subtraction</strong>.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VISUAL -->
+  <div class="section-label">Building the Prefix Array</div>
+
+  <div class="chalk" style="text-align: center; margin-bottom: 2px;"><span class="orange">Original array:</span></div>
+
+  <!-- Index labels -->
+  <div class="idx-row">
+    <div class="arr-label"></div>
+    <div class="idx-cell">0</div>
+    <div class="idx-cell">1</div>
+    <div class="idx-cell">2</div>
+    <div class="idx-cell">3</div>
+    <div class="idx-cell">4</div>
+  </div>
+
+  <!-- Original array -->
+  <div class="arr-row">
+    <div class="arr-label">nums</div>
+    <div class="cell">2</div>
+    <div class="cell">4</div>
+    <div class="cell">1</div>
+    <div class="cell">3</div>
+    <div class="cell">5</div>
+  </div>
+
+  <div class="arrow-down">&#9660; cumulative sums &#9660;</div>
+
+  <!-- Prefix index labels -->
+  <div class="idx-row">
+    <div class="arr-label"></div>
+    <div class="idx-cell">0</div>
+    <div class="idx-cell">1</div>
+    <div class="idx-cell">2</div>
+    <div class="idx-cell">3</div>
+    <div class="idx-cell">4</div>
+    <div class="idx-cell">5</div>
+  </div>
+
+  <!-- Prefix array -->
+  <div class="arr-row">
+    <div class="arr-label">prefix</div>
+    <div class="cell done">0</div>
+    <div class="cell done">2</div>
+    <div class="cell done">6</div>
+    <div class="cell done">7</div>
+    <div class="cell done">10</div>
+    <div class="cell done">15</div>
+  </div>
+
+  <div class="chalk" style="text-align: center; margin-top: 2px;">
+    <span class="green">prefix[k]</span> = sum of the first <strong>k</strong> elements
+  </div>
+
+  <hr class="divider">
+
+  <!-- FORMULA -->
+  <div class="section-label">Range Sum Formula</div>
+
+  <div class="formula">
+    sum(i, j) = prefix[j + 1] &minus; prefix[i]
+  </div>
+
+  <div class="chalk" style="text-align: center;">
+    Sum from index <span class="cyan">i</span> to <span class="cyan">j</span> (inclusive) in <span class="pink">one subtraction</span>.
+  </div>
+
+  <hr class="divider">
+
+  <!-- EXAMPLE -->
+  <div class="section-label">Example: sum(1, 3)</div>
+
+  <div class="calc-box">
+    <div class="chalk">
+      We want the sum from index <span class="cyan">1</span> to <span class="cyan">3</span>: elements <strong>4 + 1 + 3 = 8</strong>
+    </div>
+
+    <!-- Show which cells are selected -->
+    <div class="arr-row" style="margin-top: 6px;">
+      <div class="arr-label">nums</div>
+      <div class="cell dim">2</div>
+      <div class="cell highlight">4</div>
+      <div class="cell highlight">1</div>
+      <div class="cell highlight">3</div>
+      <div class="cell dim">5</div>
+    </div>
+
+    <div class="chalk" style="margin-top: 6px; text-align: center;">
+      <span class="orange">prefix[4]</span> &minus; <span class="pink">prefix[1]</span> = <strong>10</strong> &minus; <strong>2</strong> = <span class="green">8</span>
+    </div>
+
+    <!-- Show which prefix cells are used -->
+    <div class="arr-row" style="margin-top: 4px;">
+      <div class="arr-label">prefix</div>
+      <div class="cell dim">0</div>
+      <div class="cell pink-cell">2</div>
+      <div class="cell dim">6</div>
+      <div class="cell dim">7</div>
+      <div class="cell orange-cell">10</div>
+      <div class="cell dim">15</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CODE -->
+  <div class="section-label">Code Template</div>
+
+  <div class="step-box">
+    <div class="step-title">Build the Prefix Array</div>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">buildPrefix</span>(nums) {
+  <span class="kw">const</span> prefix = [<span class="num">0</span>];
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i < nums.length; i++) {
+    prefix.<span class="fn">push</span>(prefix[i] + nums[i]);
+  }
+  <span class="kw">return</span> prefix;
+}</div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Query Any Range in O(1)</div>
+    <div class="code-block"><span class="kw">function</span> <span class="fn">rangeSum</span>(prefix, i, j) {
+  <span class="kw">return</span> prefix[j + <span class="num">1</span>] - prefix[i];
+}</div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Usage</div>
+    <div class="code-block"><span class="kw">const</span> nums = [<span class="num">2</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>];
+<span class="kw">const</span> prefix = <span class="fn">buildPrefix</span>(nums);
+<span class="cm">// prefix = [0, 2, 6, 7, 10, 15]</span>
+
+<span class="fn">rangeSum</span>(prefix, <span class="num">1</span>, <span class="num">3</span>); <span class="cm">// 10 - 2 = 8</span>
+<span class="fn">rangeSum</span>(prefix, <span class="num">0</span>, <span class="num">4</span>); <span class="cm">// 15 - 0 = 15</span>
+<span class="fn">rangeSum</span>(prefix, <span class="num">2</span>, <span class="num">2</span>); <span class="cm">// 7 - 6 = 1</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- WHEN TO USE -->
+  <div class="section-label">When to Use</div>
+
+  <div class="use-cases">
+    <span class="pill">range sum query</span>
+    <span class="pill">subarray sum</span>
+    <span class="pill">multiple sum queries</span>
+    <span class="pill">product except self</span>
+    <span class="pill">subarray sum = k</span>
+    <span class="pill">contiguous sum</span>
+  </div>
+
+  <hr class="divider">
+
+  <!-- KEY INSIGHTS -->
+  <div class="section-label">Key Insights</div>
+
+  <div class="insight">
+    <div class="insight-label">1. What prefix[i] means</div>
+    <div class="chalk"><strong>prefix[i]</strong> = sum of the first <span class="cyan">i</span> elements (indices 0 to i-1). That's why prefix has length <span class="pink">n + 1</span> and starts with <strong>0</strong>.</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">2. Any range sum = one subtraction</div>
+    <div class="chalk">Instead of looping through elements, just compute <strong>prefix[j+1] - prefix[i]</strong>. Two lookups, one subtraction &mdash; <span class="green">O(1)</span>.</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">3. Build once, query forever</div>
+    <div class="chalk">Building the prefix array is <span class="pink">O(n)</span>. After that, every query is <span class="green">O(1)</span>. With <strong>Q</strong> queries, total is O(n + Q) instead of O(n * Q).</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">4. Variations work the same way</div>
+    <div class="chalk"><span class="orange">Prefix XOR</span>, <span class="orange">prefix product</span>, and <span class="orange">prefix count</span> all follow the same pattern &mdash; precompute cumulative values, then extract any range with one operation.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- COMPLEXITY -->
+  <div class="section-label">Complexity</div>
+  <div class="complexity">
+    <div class="badge">Build: <span class="t">O(n)</span> time</div>
+    <div class="badge">Query: <span class="t">O(1)</span> time</div>
+  </div>
+  <div class="complexity">
+    <div class="badge">Space: <span class="s">O(n)</span></div>
+  </div>
+
+</div>
+</body>
+</html>

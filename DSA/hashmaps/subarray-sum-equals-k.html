@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subarray Sum Equals K — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* --- Typography --- */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* --- Array Cells --- */
+  .arr-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+  }
+
+  .cell {
+    width: clamp(32px, 7.5vw, 38px);
+    height: clamp(28px, 6.5vw, 34px);
+    border: 2px solid rgba(255,255,255,0.7);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: clamp(13px, 3vw, 17px);
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  .cell.active { background: rgba(255,224,102,0.15); border-color: #ffe066; color: #ffe066; box-shadow: 0 0 8px rgba(255,224,102,0.15); }
+  .cell.highlight { background: rgba(127,212,255,0.12); border-color: #7fd4ff; color: #7fd4ff; box-shadow: 0 0 8px rgba(127,212,255,0.15); }
+  .cell.done { background: rgba(144,238,144,0.1); border-color: #90ee90; color: #90ee90; box-shadow: 0 0 8px rgba(144,238,144,0.12); }
+  .cell.dim { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.4); }
+  .cell.orange-cell { background: rgba(255,179,71,0.12); border-color: #ffb347; color: #ffb347; box-shadow: 0 0 8px rgba(255,179,71,0.15); }
+  .cell.pink-cell { background: rgba(255,158,207,0.12); border-color: #ff9ecf; color: #ff9ecf; box-shadow: 0 0 8px rgba(255,158,207,0.15); }
+
+  .arr-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.55);
+    min-width: clamp(50px, 12vw, 68px);
+    text-align: right;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+
+  .idx-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    margin: 1px 0;
+  }
+
+  .idx-cell {
+    width: clamp(32px, 7.5vw, 38px);
+    text-align: center;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(8px, 1.8vw, 10px);
+    color: rgba(255,255,255,0.4);
+    flex-shrink: 0;
+    margin: 0 1px;
+  }
+
+  /* --- Boxes --- */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* --- Map visualization --- */
+  .map-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 3px 0;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9px, 2vw, 11px);
+    color: rgba(255,255,255,0.75);
+  }
+
+  .map-entry {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .map-entry .mk { color: #7fd4ff; }
+  .map-entry .mv { color: #ffe066; }
+
+  .map-entry.new-entry {
+    border-color: rgba(144,238,144,0.4);
+    background: rgba(144,238,144,0.08);
+  }
+
+  .map-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(9px, 2vw, 11px);
+    color: rgba(255,255,255,0.5);
+    min-width: 28px;
+  }
+
+  /* --- Formula highlight --- */
+  .formula {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,224,102,0.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: center;
+    margin: 5px 0;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: #ffe066;
+  }
+
+  /* --- Code block --- */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* --- Insight & Complexity --- */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* --- Use case pills --- */
+  .use-cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 5px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 3px 11px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* --- Back button --- */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a class="back-btn" href="../../index.html">&larr; Back</a>
+
+  <div class="title">Subarray Sum Equals K</div>
+  <div class="subtitle">LC #560 | Prefix Sum + Hashmap combo</div>
+
+  <!-- ======= PROBLEM ======= -->
+  <div class="section-label">The Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given an integer array <strong>nums</strong> and an integer <strong>k</strong>,
+      return the <span class="pink">total number of subarrays</span> whose sum equals <strong>k</strong>.
+    </div>
+    <div class="chalk" style="margin-top:5px;">
+      <span class="cyan">Input:</span> nums = [1, 1, 1], k = 2<br>
+      <span class="green">Output:</span> <strong>2</strong> &mdash; subarrays [1,1] at index 0..1 and 1..2
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= INTUITION ======= -->
+  <div class="section-label">Key Intuition</div>
+  <div class="chalk">
+    If <strong>prefix[j] - prefix[i] = k</strong>, then the subarray from
+    <span class="orange">i+1</span> to <span class="orange">j</span> sums to k.
+  </div>
+  <div class="formula">
+    prefix[j] - prefix[i] = k &rArr; prefix[i] = prefix[j] - k
+  </div>
+  <div class="chalk">
+    So at each position, ask: <span class="pink">how many previous prefix sums equal (currentPrefix - k)?</span>
+    A <span class="cyan">hashmap</span> tracks prefix sum frequencies for O(1) lookup.
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= WALKTHROUGH ======= -->
+  <div class="section-label">Visual Walkthrough</div>
+  <div class="chalk" style="margin-bottom:3px;">
+    <strong>nums = [1, 2, 3, -2, 5]</strong>, <strong>k = 3</strong>
+  </div>
+
+  <!-- Array -->
+  <div class="arr-row">
+    <div class="arr-label">nums</div>
+    <div class="cell">1</div>
+    <div class="cell">2</div>
+    <div class="cell">3</div>
+    <div class="cell">-2</div>
+    <div class="cell">5</div>
+  </div>
+  <div class="idx-row">
+    <div class="arr-label"></div>
+    <div class="idx-cell">0</div>
+    <div class="idx-cell">1</div>
+    <div class="idx-cell">2</div>
+    <div class="idx-cell">3</div>
+    <div class="idx-cell">4</div>
+  </div>
+
+  <!-- Prefix sums -->
+  <div class="arr-row" style="margin-top:4px;">
+    <div class="arr-label">prefix</div>
+    <div class="cell dim">0</div>
+    <div class="cell">1</div>
+    <div class="cell highlight">3</div>
+    <div class="cell active">6</div>
+    <div class="cell orange-cell">4</div>
+    <div class="cell pink-cell">9</div>
+  </div>
+  <div class="idx-row">
+    <div class="arr-label"></div>
+    <div class="idx-cell">0</div>
+    <div class="idx-cell">1</div>
+    <div class="idx-cell">2</div>
+    <div class="idx-cell">3</div>
+    <div class="idx-cell">4</div>
+    <div class="idx-cell">5</div>
+  </div>
+
+  <!-- Step-by-step -->
+  <div class="step-box">
+    <div class="step-title">Step 1: prefix = 1</div>
+    <div class="chalk">
+      need <strong>1 - 3 = -2</strong> in map &rarr; not found &rarr; <span class="orange">count = 0</span>
+    </div>
+    <div class="map-row">
+      <span class="map-label">map:</span>
+      <span class="map-entry"><span class="mk">0</span>:<span class="mv">1</span></span>
+      <span class="map-entry new-entry"><span class="mk">1</span>:<span class="mv">1</span></span>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 2: prefix = 3</div>
+    <div class="chalk">
+      need <strong>3 - 3 = 0</strong> in map &rarr; <span class="green">found 1 time!</span> &rarr; <span class="green">count = 1</span>
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.55);">
+      subarray [1, 2] (index 0..1) sums to 3
+    </div>
+    <div class="map-row">
+      <span class="map-label">map:</span>
+      <span class="map-entry"><span class="mk">0</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">1</span>:<span class="mv">1</span></span>
+      <span class="map-entry new-entry"><span class="mk">3</span>:<span class="mv">1</span></span>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 3: prefix = 6</div>
+    <div class="chalk">
+      need <strong>6 - 3 = 3</strong> in map &rarr; <span class="green">found 1 time!</span> &rarr; <span class="green">count = 2</span>
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.55);">
+      subarray [3] (index 2..2) sums to 3
+    </div>
+    <div class="map-row">
+      <span class="map-label">map:</span>
+      <span class="map-entry"><span class="mk">0</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">1</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">3</span>:<span class="mv">1</span></span>
+      <span class="map-entry new-entry"><span class="mk">6</span>:<span class="mv">1</span></span>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 4: prefix = 4</div>
+    <div class="chalk">
+      need <strong>4 - 3 = 1</strong> in map &rarr; <span class="green">found 1 time!</span> &rarr; <span class="green">count = 3</span>
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.55);">
+      subarray [2, 3, -2] (index 1..3) sums to 3
+    </div>
+    <div class="map-row">
+      <span class="map-label">map:</span>
+      <span class="map-entry"><span class="mk">0</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">1</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">3</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">6</span>:<span class="mv">1</span></span>
+      <span class="map-entry new-entry"><span class="mk">4</span>:<span class="mv">1</span></span>
+    </div>
+  </div>
+
+  <div class="step-box">
+    <div class="step-title">Step 5: prefix = 9</div>
+    <div class="chalk">
+      need <strong>9 - 3 = 6</strong> in map &rarr; <span class="green">found 1 time!</span> &rarr; <span class="green">count = 4</span>
+    </div>
+    <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.55);">
+      subarray [-2, 5] (index 3..4) sums to 3
+    </div>
+    <div class="map-row">
+      <span class="map-label">map:</span>
+      <span class="map-entry"><span class="mk">0</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">1</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">3</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">6</span>:<span class="mv">1</span></span>
+      <span class="map-entry"><span class="mk">4</span>:<span class="mv">1</span></span>
+      <span class="map-entry new-entry"><span class="mk">9</span>:<span class="mv">1</span></span>
+    </div>
+  </div>
+
+  <div class="solution-box">
+    <div class="chalk" style="text-align:center;">
+      <span class="green">Final answer: <strong>count = 4</strong></span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= WHY map.set(0, 1) ======= -->
+  <div class="section-label">Why map.set(0, 1)?</div>
+  <div class="step-box">
+    <div class="chalk">
+      A subarray from <strong>index 0 to j</strong> has sum = <span class="cyan">prefix[j+1] - prefix[0]</span> = prefix[j+1] - <strong>0</strong>.<br><br>
+      We need that <span class="pink">"0" prefix already in the map</span> so subarrays starting at the
+      beginning of the array are counted. Without it, we'd miss every subarray that starts at index 0!
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= CODE ======= -->
+  <div class="section-label">Code</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">subarraySum</span>(nums, k) {
+  <span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Map</span>();
+  map.<span class="fn">set</span>(<span class="num">0</span>, <span class="num">1</span>);  <span class="cm">// empty prefix</span>
+  <span class="kw">let</span> sum = <span class="num">0</span>, count = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">const</span> num <span class="kw">of</span> nums) {
+    sum += num;
+    <span class="kw">if</span> (map.<span class="fn">has</span>(sum - k)) {
+      count += map.<span class="fn">get</span>(sum - k);
+    }
+    map.<span class="fn">set</span>(sum, (map.<span class="fn">get</span>(sum) || <span class="num">0</span>) + <span class="num">1</span>);
+  }
+  <span class="kw">return</span> count;
+}</div>
+
+  <hr class="divider">
+
+  <!-- ======= WHEN TO USE ======= -->
+  <div class="section-label">When to Use</div>
+  <div class="use-cases">
+    <span class="pill">count subarrays with sum = k</span>
+    <span class="pill">subarray sum divisible by k</span>
+    <span class="pill">negative numbers present</span>
+    <span class="pill">can't use sliding window</span>
+  </div>
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); color:rgba(255,255,255,0.55);">
+    Sliding window only works when all numbers are positive (window sum is monotonic).
+    With negatives, you need prefix sum + hashmap!
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= KEY INSIGHTS ======= -->
+  <div class="section-label">Key Insights</div>
+  <div class="insight">
+    <div class="insight-label">Insight 1</div>
+    <div class="chalk">
+      This is the <strong>COMBINATION</strong> of two techniques: <span class="cyan">prefix sum</span> + <span class="pink">hashmap lookup</span>.
+      Prefix sum converts "subarray sum" into "difference of two values". Hashmap makes finding that difference O(1).
+    </div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Insight 2</div>
+    <div class="chalk">
+      <span class="pink">Can't use sliding window</span> when the array has <strong>negative numbers</strong>.
+      Shrinking the window might increase or decrease the sum unpredictably.
+    </div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Insight 3</div>
+    <div class="chalk">
+      <strong>map.set(0, 1)</strong> is the critical base case &mdash;
+      forgetting it <span class="orange">misses every subarray starting at index 0</span>.
+    </div>
+  </div>
+  <div class="insight">
+    <div class="insight-label">Insight 4</div>
+    <div class="chalk">
+      We need the <strong>count</strong>, not just a boolean &mdash;
+      that's why we store <span class="green">frequencies</span>, not just existence.
+      The same prefix sum can occur multiple times, each representing a different valid subarray.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ======= COMPLEXITY ======= -->
+  <div class="section-label">Complexity</div>
+  <div class="complexity">
+    <div class="badge">Time: <span class="t">O(n)</span></div>
+    <div class="badge">Space: <span class="s">O(n)</span></div>
+  </div>
+
+</div>
+</body>
+</html>

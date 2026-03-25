@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Anagrams — Lecture Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Patrick+Hand&family=Permanent+Marker&family=Gloria+Hallelujah&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+    font-family: 'Caveat', cursive;
+  }
+
+  .board {
+    width: 100%;
+    max-width: 520px;
+    background: #2d5016;
+    background-image:
+      radial-gradient(ellipse at 20% 6%, rgba(60,100,30,0.7) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 45%, rgba(25,60,10,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 35% 88%, rgba(50,90,25,0.4) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 38px, rgba(0,0,0,0.03) 38px, rgba(0,0,0,0.03) 40px);
+    border: 14px solid #5c3a1e;
+    border-image: linear-gradient(135deg, #8B6914, #5c3a1e 30%, #3d2510 50%, #5c3a1e 70%, #8B6914) 1;
+    box-shadow:
+      inset 0 0 80px rgba(0,0,0,0.3),
+      inset 0 0 20px rgba(0,0,0,0.2),
+      0 8px 32px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(1px 1px at 18% 22%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 60% 50%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.05), transparent),
+      radial-gradient(2px 2px at 40% 88%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board > * { position: relative; z-index: 1; }
+
+  /* ─── Typography ─── */
+  .title {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(18px, 4.2vw, 24px);
+    text-align: center;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5), 0 0 10px rgba(255,224,102,0.15);
+    border-bottom: 2px dashed rgba(255,224,102,0.3);
+    padding-bottom: 7px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-family: 'Patrick Hand', cursive;
+    color: rgba(255,255,255,0.65);
+    font-size: clamp(11px, 2.5vw, 14px);
+    text-align: center;
+    margin-top: -3px;
+  }
+
+  .section-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #7fd4ff;
+    font-size: clamp(13px, 3vw, 16px);
+    text-shadow: 0 0 6px rgba(127,212,255,0.2);
+    margin-top: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(127,212,255,0.3);
+  }
+
+  .chalk {
+    font-family: 'Caveat', cursive;
+    color: rgba(255,255,255,0.88);
+    font-size: clamp(12px, 2.8vw, 15px);
+    line-height: 1.45;
+    text-shadow: 0 0 3px rgba(255,255,255,0.08);
+  }
+  .chalk strong { color: #ffe066; font-weight: 700; }
+  .chalk .pink { color: #ff9ecf; }
+  .chalk .green { color: #90ee90; }
+  .chalk .cyan { color: #7fd4ff; }
+  .chalk .orange { color: #ffb347; }
+
+  /* ─── Problem / Solution / Step boxes ─── */
+  .problem-box {
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .solution-box {
+    background: rgba(144,238,144,0.06);
+    border: 1px solid rgba(144,238,144,0.15);
+    border-radius: 8px;
+    padding: 9px 11px;
+    margin: 4px 0;
+  }
+
+  .step-box {
+    background: rgba(0,0,0,0.14);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 4px 0;
+  }
+
+  .step-title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: #ffb347;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Code block ─── */
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(127,212,255,0.2);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(9.5px, 2.2vw, 12px);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff9ecf; }
+  .code-block .fn { color: #7fd4ff; }
+  .code-block .cm { color: rgba(255,255,255,0.35); }
+  .code-block .num { color: #ffb347; }
+  .code-block .str { color: #90ee90; }
+
+  /* ─── Insight & Complexity ─── */
+  .insight {
+    background: rgba(255,224,102,0.06);
+    border-left: 3px solid #ffe066;
+    border-radius: 0 6px 6px 0;
+    padding: 7px 11px;
+    margin: 4px 0;
+  }
+  .insight-label {
+    font-family: 'Permanent Marker', cursive;
+    color: #ffe066;
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+
+  .complexity {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin: 5px 0;
+  }
+  .badge {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.6vw, 14px);
+    color: rgba(255,255,255,0.75);
+  }
+  .badge .t { color: #ffe066; font-weight: 700; }
+  .badge .s { color: #90ee90; font-weight: 700; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 5px 0;
+  }
+
+  /* ─── Bucket / Group visualization ─── */
+  .mapping-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.8);
+  }
+  .mapping-word {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: clamp(12px, 2.8vw, 15px);
+    color: #fff;
+    min-width: 36px;
+    text-align: center;
+  }
+  .mapping-arrow {
+    color: rgba(255,255,255,0.4);
+    font-size: clamp(11px, 2.5vw, 14px);
+  }
+  .mapping-key {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: #7fd4ff;
+    font-weight: 700;
+  }
+
+  .bucket-group {
+    background: rgba(0,0,0,0.14);
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin: 4px 0;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .bucket-key {
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: #7fd4ff;
+    margin-bottom: 4px;
+  }
+  .bucket-items {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .bucket-item {
+    border-radius: 5px;
+    padding: 2px 10px;
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    font-size: clamp(12px, 2.8vw, 15px);
+    text-align: center;
+  }
+  .bucket-item.group-a {
+    background: rgba(255,158,207,0.12);
+    border: 1px solid rgba(255,158,207,0.3);
+    color: #ff9ecf;
+  }
+  .bucket-item.group-b {
+    background: rgba(127,212,255,0.12);
+    border: 1px solid rgba(127,212,255,0.3);
+    color: #7fd4ff;
+  }
+  .bucket-item.group-c {
+    background: rgba(144,238,144,0.12);
+    border: 1px solid rgba(144,238,144,0.3);
+    color: #90ee90;
+  }
+
+  /* ─── Use-case pills ─── */
+  .pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 4px 0;
+  }
+  .pill {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 2px 12px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(10px, 2.3vw, 13px);
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ─── Back button ─── */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: clamp(11px, 2.5vw, 14px);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    align-self: flex-start;
+  }
+  .back-btn:hover {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <a class="back-btn" href="../../index.html">&larr; Back</a>
+
+  <div class="title">Group Anagrams</div>
+  <div class="subtitle">LC #49 | Canonical key &rarr; hashmap grouping</div>
+
+  <!-- ═══════ PROBLEM ═══════ -->
+  <div class="section-label">Problem</div>
+  <div class="problem-box">
+    <div class="chalk">
+      Given an array of strings, <strong>group the anagrams</strong> together. Return the groups in any order.
+    </div>
+    <div class="chalk" style="margin-top:5px;">
+      <span class="orange">Input:</span> <strong>["eat","tea","tan","ate","nat","bat"]</strong>
+    </div>
+    <div class="chalk">
+      <span class="green">Output:</span> <strong>[["eat","tea","ate"], ["tan","nat"], ["bat"]]</strong>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ INTUITION ═══════ -->
+  <div class="section-label">Intuition</div>
+  <div class="chalk">
+    Anagrams have the <strong>same letters</strong> in different order.<br>
+    If we <span class="pink">sort each string</span>, anagrams become <strong>identical</strong>.<br>
+    Use the <span class="cyan">sorted string as a hashmap key</span> &rarr; group words that share the same key.
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ VISUAL: SORTING STEP ═══════ -->
+  <div class="section-label">Step 1 &mdash; Compute Sorted Key</div>
+  <div class="step-box">
+    <div class="step-title">Each word &rarr; sorted form</div>
+    <div class="mapping-row"><div class="mapping-word">"eat"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"aet"</div></div>
+    <div class="mapping-row"><div class="mapping-word">"tea"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"aet"</div></div>
+    <div class="mapping-row"><div class="mapping-word">"tan"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"ant"</div></div>
+    <div class="mapping-row"><div class="mapping-word">"ate"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"aet"</div></div>
+    <div class="mapping-row"><div class="mapping-word">"nat"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"ant"</div></div>
+    <div class="mapping-row"><div class="mapping-word">"bat"</div><div class="mapping-arrow">&rarr;</div><div class="mapping-key">"abt"</div></div>
+  </div>
+
+  <!-- ═══════ VISUAL: BUCKET GROUPING ═══════ -->
+  <div class="section-label">Step 2 &mdash; Group by Key</div>
+  <div class="step-box">
+    <div class="step-title">Hashmap buckets</div>
+
+    <div class="bucket-group">
+      <div class="bucket-key">"aet" &rarr;</div>
+      <div class="bucket-items">
+        <div class="bucket-item group-a">"eat"</div>
+        <div class="bucket-item group-a">"tea"</div>
+        <div class="bucket-item group-a">"ate"</div>
+      </div>
+    </div>
+
+    <div class="bucket-group">
+      <div class="bucket-key">"ant" &rarr;</div>
+      <div class="bucket-items">
+        <div class="bucket-item group-b">"tan"</div>
+        <div class="bucket-item group-b">"nat"</div>
+      </div>
+    </div>
+
+    <div class="bucket-group">
+      <div class="bucket-key">"abt" &rarr;</div>
+      <div class="bucket-items">
+        <div class="bucket-item group-c">"bat"</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ CODE: SORT KEY ═══════ -->
+  <div class="section-label">Code &mdash; Sort Key Approach</div>
+  <div class="code-block"><span class="kw">function</span> <span class="fn">groupAnagrams</span>(strs) {
+  <span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Map</span>();
+  <span class="kw">for</span> (<span class="kw">const</span> s <span class="kw">of</span> strs) {
+    <span class="kw">const</span> key = s.<span class="fn">split</span>(<span class="str">''</span>).<span class="fn">sort</span>().<span class="fn">join</span>(<span class="str">''</span>);
+    <span class="kw">if</span> (!map.<span class="fn">has</span>(key)) map.<span class="fn">set</span>(key, []);
+    map.<span class="fn">get</span>(key).<span class="fn">push</span>(s);
+  }
+  <span class="kw">return</span> <span class="fn">Array</span>.<span class="fn">from</span>(map.<span class="fn">values</span>());
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ ALTERNATIVE KEY ═══════ -->
+  <div class="section-label">Alternative &mdash; Count Key</div>
+  <div class="chalk">
+    Instead of sorting, count each letter's frequency.<br>
+    Key = <span class="cyan">"1,0,0,0,1,0,...,1,0,..."</span> (26 counts joined by commas).<br>
+    <span class="green">O(k)</span> per string instead of <span class="orange">O(k log k)</span> &mdash; faster for long strings.
+  </div>
+
+  <div class="code-block"><span class="kw">function</span> <span class="fn">groupAnagrams</span>(strs) {
+  <span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Map</span>();
+  <span class="kw">for</span> (<span class="kw">const</span> s <span class="kw">of</span> strs) {
+    <span class="kw">const</span> count = <span class="kw">new</span> <span class="fn">Array</span>(<span class="num">26</span>).<span class="fn">fill</span>(<span class="num">0</span>);
+    <span class="kw">for</span> (<span class="kw">const</span> c <span class="kw">of</span> s)
+      count[c.<span class="fn">charCodeAt</span>(<span class="num">0</span>) - <span class="num">97</span>]++;
+    <span class="kw">const</span> key = count.<span class="fn">join</span>(<span class="str">','</span>);
+    <span class="kw">if</span> (!map.<span class="fn">has</span>(key)) map.<span class="fn">set</span>(key, []);
+    map.<span class="fn">get</span>(key).<span class="fn">push</span>(s);
+  }
+  <span class="kw">return</span> <span class="fn">Array</span>.<span class="fn">from</span>(map.<span class="fn">values</span>());
+}</div>
+
+  <hr class="divider">
+
+  <!-- ═══════ WHEN TO USE ═══════ -->
+  <div class="section-label">When to Use This Pattern</div>
+  <div class="pill-row">
+    <span class="pill" style="color:#ff9ecf;">"group by property"</span>
+    <span class="pill" style="color:#7fd4ff;">"canonical form"</span>
+    <span class="pill" style="color:#90ee90;">"equivalence classes"</span>
+  </div>
+  <div class="chalk" style="font-size:clamp(11px,2.4vw,13px); color:rgba(255,255,255,0.6);">
+    Whenever items need grouping by some shared invariant, transform each item into a canonical key and bucket them in a hashmap.
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ KEY INSIGHTS ═══════ -->
+  <div class="section-label">Key Insights</div>
+
+  <div class="insight">
+    <div class="insight-label">Insight 1</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      The core pattern: <strong>transform each item into a canonical key</strong>, then <span class="pink">group by that key</span> using a hashmap.
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">Insight 2</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      Sort key costs <span class="orange">O(k log k)</span> per string. Count key costs <span class="green">O(k)</span> per string. Choose based on string length.
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">Insight 3</div>
+    <div class="chalk" style="font-size:clamp(11px,2.5vw,13px);">
+      This <strong>"canonical key grouping"</strong> pattern appears in many problems beyond anagrams &mdash; group shifted strings, isomorphic strings, etc.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ═══════ COMPLEXITY ═══════ -->
+  <div class="section-label">Complexity</div>
+  <div class="complexity">
+    <div class="badge"><span class="t">Time:</span> O(n &middot; k log k)</div>
+    <div class="badge"><span class="s">Space:</span> O(n &middot; k)</div>
+  </div>
+  <div class="chalk" style="font-size:clamp(10px,2.2vw,12px); text-align:center; color:rgba(255,255,255,0.5);">
+    n = number of strings, k = max string length. With count key: O(n &middot; k) time.
+  </div>
+
+</div>
+</body>
+</html>
